@@ -5,7 +5,6 @@ notifications:
 julia:
   - 1.6
   - 1.9
-  - nightly
 os:
   - linux
 arch:
