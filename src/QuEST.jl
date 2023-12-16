@@ -6,8 +6,9 @@ module QuEST
     @reexport using JuliaFormatter
     include("utils.jl")
    
-    wrappers_file = "src/C/quest_julia_c_wrapper.jl"
+    wrappers_file = joinpath(@__DIR__,"C/quest_julia_c_wrapper.jl")
     exports = Symbol.(get_function_struct_names(wrappers_file))
+    
 export 
     exports
 
