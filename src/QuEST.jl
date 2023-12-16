@@ -12,6 +12,5 @@ module QuEST
 export 
     exports
 
-    include("gen/wrapper.jl")
     include("C/quest_julia_c_wrapper.jl")
 end
