@@ -2,3 +2,5 @@
 
 ## Details
 Quantum Exact Simulation Toolkit is a high performance simulator of quantum circuits, state-vectors and density matrices
+
+Wrapper from https://github.com/QuEST-Kit/QuEST 
