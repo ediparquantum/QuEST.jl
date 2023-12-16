@@ -1,4 +1,20 @@
+name = "QuEST"
+uuid = "2f8c4c1a-2c62-410c-b829-98d6ce53c0c2"
+authors = ["Jonathan Miller <jonathan.miller@fieldofnodes.com> and contributors"]
+version = "1.0.0-DEV"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
+
+
 [deps]
+Clang = "40e3b903-d033-50b4-a0cc-940c62c95e31"
 JuliaFormatter = "98e50ef6-434e-11e9-1051-2b60c6c9e899"
 QuEST_jll = "4a967bbd-a16f-537d-8e95-e68e89d08900"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
