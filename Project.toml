@@ -10,6 +10,7 @@ QuEST_jll = "4a967bbd-a16f-537d-8e95-e68e89d08900"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 
 [compat]
+Clang = "0.17"
 Reexport = "1"
 julia = "1"
 
