@@ -265,6 +265,7 @@ function initPlusState(qureg)
 end
 
 function initClassicalState(qureg, stateInd)
+    stateInd = c_shift_index(stateInd)
     @ccall libquest.initClassicalState(qureg::Qureg, stateInd::Clonglong)::Cvoid
 end
 
