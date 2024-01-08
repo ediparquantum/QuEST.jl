@@ -1,4 +1,7 @@
 using Pkg
 Pkg.activate(".")
-Pkg.update()
 
+include("src/QuEST.jl")
+using .QuEST
+
+env = createQuESTEnv()

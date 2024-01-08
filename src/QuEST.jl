@@ -10,6 +10,7 @@ module QuEST
     exports = Symbol.(get_function_struct_names(wrappers_file))
     
 export 
+    createQuESTEnv,
     exports
 
     include("C/quest_julia_c_wrapper.jl")

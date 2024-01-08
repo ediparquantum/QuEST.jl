@@ -22,3 +22,11 @@ function get_function_struct_names(filename)
     return res
 end
 
+
+"""
+    Takes an integer index and returns the corresponding index in C,
+    namely index - 1
+"""
+function c_shift_index(index::Integer)
+  index -= 1
+end
