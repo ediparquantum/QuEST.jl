@@ -152,8 +152,8 @@ function test_PauliHamil()
     codes =  rand(instances(paulies), numQubits*numSumTerms)
     coeffs = rand(Float64, numSumTerms)
     initPauliHamil(hamil, coeffs, codes)
-    hamil_codes = unsafe_wrap(Base.Vector{pauliOpType}, hamil.pauliCodes, numQubits*numSumTerms)
-    hamil_coeffs = unsafe_wrap(Base.Vector{Float64}, hamil.termCoeffs, numSumTerms)
+    hamil_codes = unsafe_wrap(Vector{pauliOpType}, hamil.pauliCodes, numQubits*numSumTerms)
+    hamil_coeffs = unsafe_wrap(Vector{Float64}, hamil.termCoeffs, numSumTerms)
     for ind =1:numSumTerms
         @test coeffs[ind] ≈ hamil_coeffs[ind]  atol = tolerance
         for qubit = 1:numQubits
@@ -178,8 +178,8 @@ function test_PauliHamil()
     close(f)
 
     hamil = createPauliHamilFromFile("hamil")
-    hamil_codes = unsafe_wrap(Base.Vector{pauliOpType}, hamil.pauliCodes, numQubits*numSumTerms)
-    hamil_coeffs = unsafe_wrap(Base.Vector{Float64}, hamil.termCoeffs, numSumTerms)
+    hamil_codes = unsafe_wrap(Vector{pauliOpType}, hamil.pauliCodes, numQubits*numSumTerms)
+    hamil_coeffs = unsafe_wrap(Vector{Float64}, hamil.termCoeffs, numSumTerms)
     for ind=1:numSumTerms
         @test coeffs[ind] ≈ hamil_coeffs[ind] atol = tolerance
         for qubit = 1:numQubits
@@ -196,19 +196,19 @@ end
 function test_compactUnitary()
     env= createQuESTEnv()
     for t=1:10
-        α=Base.Complex(rand(Cdouble),rand(Cdouble))
-        β=Base.Complex(rand(Cdouble),rand(Cdouble))
+        α=Complex(rand(Cdouble),rand(Cdouble))
+        β=Complex(rand(Cdouble),rand(Cdouble))
         norm = sqrt(α*conj(α) + β*conj(β))
         α /= norm
         β /= norm
         numQubits = rand(1:12)
         target = rand(1:numQubits)
         qureg = createQureg(numQubits, env)
-        α = QuEST.Complex(α.re, α.im)
-        β = QuEST.Complex(β.re, β.im)
+        α = QComplex(α.re, α.im)
+        β = QComplex(β.re, β.im)
         compactUnitary(qureg, target, α, β)
-        reals = unsafe_wrap(Base.Vector{Float64}, qureg.stateVec.real, 2^numQubits)
-        imags = unsafe_wrap(Base.Vector{Float64}, qureg.stateVec.imag, 2^numQubits)
+        reals = unsafe_wrap(Vector{Float64}, qureg.stateVec.real, 2^numQubits)
+        imags = unsafe_wrap(Vector{Float64}, qureg.stateVec.imag, 2^numQubits)
         @test reals[1] ≈ α.real atol = tolerance
         @test imags[1] ≈ α.imag atol = tolerance
         @test reals[2^(target-1)+1] ≈ β.real atol = tolerance

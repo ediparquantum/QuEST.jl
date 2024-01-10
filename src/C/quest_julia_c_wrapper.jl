@@ -33,10 +33,12 @@ end
     PAULI_Z = 3
 end
 
-struct Complex
+
+struct QComplex
     real::Cdouble
     imag::Cdouble
 end
+
 
 struct ComplexMatrix2
     real::NTuple{2, NTuple{2, Cdouble}}
@@ -48,7 +50,7 @@ struct ComplexMatrix4
     imag::NTuple{4, NTuple{4, Cdouble}}
 end
 
-struct Vector
+struct QVector
     x::Cdouble
     y::Cdouble
     z::Cdouble
@@ -205,7 +207,7 @@ function applyDiagonalOp(qureg, op)
 end
 
 function calcExpecDiagonalOp(qureg, op)
-    @ccall libquest.calcExpecDiagonalOp(qureg::Qureg, op::DiagonalOp)::Complex
+    @ccall libquest.calcExpecDiagonalOp(qureg::Qureg, op::DiagonalOp)::QComplex
 end
 
 function createSubDiagonalOp(numQubits)
@@ -381,7 +383,7 @@ end
 
 function getAmp(qureg, index)
     index = c_shift_index(index)
-    @ccall libquest.getAmp(qureg::Qureg, index::Clonglong)::Complex
+    @ccall libquest.getAmp(qureg::Qureg, index::Clonglong)::QComplex
 end
 
 function getRealAmp(qureg, index)
@@ -402,7 +404,7 @@ end
 function getDensityAmp(qureg, row, col)
     row = c_shift_index(row)
     col = c_shift_index(col)
-    @ccall libquest.getDensityAmp(qureg::Qureg, row::Clonglong, col::Clonglong)::Complex
+    @ccall libquest.getDensityAmp(qureg::Qureg, row::Clonglong, col::Clonglong)::QComplex
 end
 
 function calcTotalProb(qureg)
@@ -411,7 +413,7 @@ end
 
 function compactUnitary(qureg, targetQubit, alpha, beta)
     targetQubit = c_shift_index(targetQubit)
-    @ccall libquest.compactUnitary(qureg::Qureg, targetQubit::Cint, alpha::Complex, beta::Complex)::Cvoid
+    @ccall libquest.compactUnitary(qureg::Qureg, targetQubit::Cint, alpha::QComplex, beta::QComplex)::Cvoid
 end
 
 function unitary(qureg, targetQubit, u)
@@ -436,7 +438,7 @@ end
 
 function rotateAroundAxis(qureg, rotQubit, angle, axis)
     rotQubit = c_shift_index(rotQubit)
-    @ccall libquest.rotateAroundAxis(qureg::Qureg, rotQubit::Cint, angle::Cdouble, axis::Vector)::Cvoid
+    @ccall libquest.rotateAroundAxis(qureg::Qureg, rotQubit::Cint, angle::Cdouble, axis::QVector)::Cvoid
 end
 
 function controlledRotateX(qureg, controlQubit, targetQubit, angle)
@@ -460,13 +462,13 @@ end
 function controlledRotateAroundAxis(qureg, controlQubit, targetQubit, angle, axis)
     controlQubit = c_shift_index(controlQubit)
     targetQubit = c_shift_index(targetQubit)
-    @ccall libquest.controlledRotateAroundAxis(qureg::Qureg, controlQubit::Cint, targetQubit::Cint, angle::Cdouble, axis::Vector)::Cvoid
+    @ccall libquest.controlledRotateAroundAxis(qureg::Qureg, controlQubit::Cint, targetQubit::Cint, angle::Cdouble, axis::QVector)::Cvoid
 end
 
 function controlledCompactUnitary(qureg, controlQubit, targetQubit, alpha, beta)
     controlQubit = c_shift_index(controlQubit)
     targetQubit = c_shift_index(targetQubit)
-    @ccall libquest.controlledCompactUnitary(qureg::Qureg, controlQubit::Cint, targetQubit::Cint, alpha::Complex, beta::Complex)::Cvoid
+    @ccall libquest.controlledCompactUnitary(qureg::Qureg, controlQubit::Cint, targetQubit::Cint, alpha::QComplex, beta::QComplex)::Cvoid
 end
 
 function controlledUnitary(qureg, controlQubit, targetQubit, u)
@@ -550,7 +552,7 @@ function measureWithStats(qureg, measureQubit, outcomeProb)
 end
 
 function calcInnerProduct(bra, ket)
-    @ccall libquest.calcInnerProduct(bra::Qureg, ket::Qureg)::Complex
+    @ccall libquest.calcInnerProduct(bra::Qureg, ket::Qureg)::QComplex
 end
 
 function calcDensityInnerProduct(rho1, rho2)
@@ -760,7 +762,7 @@ function calcHilbertSchmidtDistance(a, b)
 end
 
 function setWeightedQureg(fac1, qureg1, fac2, qureg2, facOut, out)
-    @ccall libquest.setWeightedQureg(fac1::Complex, qureg1::Qureg, fac2::Complex, qureg2::Qureg, facOut::Complex, out::Qureg)::Cvoid
+    @ccall libquest.setWeightedQureg(fac1::QComplex, qureg1::Qureg, fac2::QComplex, qureg2::Qureg, facOut::QComplex, out::Qureg)::Cvoid
 end
 
 function applyPauliSum(inQureg, allPauliCodes, termCoeffs, numSumTerms, outQureg)
