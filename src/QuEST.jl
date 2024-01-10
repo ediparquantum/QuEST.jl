@@ -182,7 +182,8 @@ export
     applyParamNamedPhaseFuncOverrides,
     applyFullQFT,
     applyQFT,
-    applyProjector
+    applyProjector,
+    unsafe_load_state_vec
 
     include("C/quest_julia_c_wrapper.jl")
 end
