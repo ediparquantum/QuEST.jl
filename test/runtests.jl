@@ -1,6 +1,6 @@
 using QuEST
 using Test
 
-@testset "generic test" begin
-    @test true
-end
+
+include("../test/test_functions.jl")
+include("../test/test_sets.jl")
