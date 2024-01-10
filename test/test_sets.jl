@@ -38,3 +38,7 @@ end
 @testset "Test: Compact Unitary" begin
     test_compactUnitary()
 end
+
+@testset "Test: Controlled Compact Unitary" begin
+    test_controlledCompactUnitary()
+end

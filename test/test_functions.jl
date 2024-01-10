@@ -217,3 +217,31 @@ function test_compactUnitary()
     end
     destroyQuESTEnv(env)
 end
+
+function test_controlledCompactUnitary()
+    env = createQuESTEnv()
+    for t=1:10
+        α=rand(Complex{Float64})
+        β=rand(Complex{Float64})
+        norm = sqrt(α*conj(α) + β*conj(β))
+        α /= norm
+        β /= norm
+        @test abs(α)^2 + abs(β)^2 ≈ 1.0 atol = tolerance
+        numQubits = 4
+        target = 4
+        control = 3
+        qureg = createQureg(numQubits, env)
+        pauliX(qureg, control)
+        α = qComplex(α)
+        β = qComplex(β)
+        controlledCompactUnitary(qureg, control, target, α, β)
+        reals = unsafe_wrap(Vector{Float64}, qureg.stateVec.real, 2^numQubits)
+        imags = unsafe_wrap(Vector{Float64}, qureg.stateVec.imag, 2^numQubits)
+        @test reals[2^(control-1)+1] ≈ α.real atol = tolerance
+        @test imags[2^(control-1)+1] ≈ α.imag atol = tolerance
+        @test reals[2^(control-1)+2^(target-1)+1] ≈ β.real atol = tolerance
+        @test imags[2^(control-1)+2^(target-1)+1] ≈ β.imag atol = tolerance
+        destroyQureg(qureg, env)
+    end
+    destroyQuESTEnv(env)
+end

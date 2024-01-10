@@ -57,5 +57,14 @@ if the pointers do not point to valid memory. Use with caution.
 function unsafe_load_state_vec(state_vec_pointer,num_elements)
   reals = [unsafe_load(state_vec_pointer.real,q) for q in Base.OneTo(num_elements)]
   imags = [unsafe_load(state_vec_pointer.imag,q) for q in Base.OneTo(num_elements)]
-  Base.Complex.(reals,imags) 
+  Complex.(reals,imags) 
+end
+
+
+function complex(c::QComplex)
+  Complex(c.real, c.imag)
+end
+
+function qComplex(c::Complex)
+  QComplex(c.re, c.im)
 end
