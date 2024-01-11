@@ -27,3 +27,7 @@ docs/site/
 # committed for packages, but should be committed for applications that require a static
 # environment.
 Manifest.toml
+
+
+# Ignore .DS_Store files in all directories
+**/.DS_Store
