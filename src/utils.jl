@@ -68,3 +68,31 @@ end
 function qComplex(c::Complex)
   QComplex(c.re, c.im)
 end
+
+function vector(v::QVector)
+  [v.x, v.y, v.z]
+end
+
+function qVector(v::Vector)
+  QVector(v[1], v[2], v[3])
+end
+
+function make_QuEST_matrix(M ::Matrix{Base.Complex{Float64}}) ::ComplexMatrixN
+  (R,C) = size(M)
+  @assert R==C
+  @assert R ≥ 2
+  numQubits = Int(round( log2(R) ))
+  @assert 2^numQubits == R
+  @assert 1 ≤ numQubits ≤ 50
+
+  MQ = createComplexMatrixN(numQubits)
+  for c = 1:R                       # Julia is column major
+      for r = 1:R
+          re_MQ_r = unsafe_load(MQ.real,r)
+          im_MQ_r = unsafe_load(MQ.imag,r)
+          unsafe_store!(re_MQ_r, real(M[r,c]), c)
+          unsafe_store!(im_MQ_r, imag(M[r,c]), c)
+      end
+  end
+  return MQ
+end

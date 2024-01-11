@@ -42,3 +42,39 @@ end
 @testset "Test: Controlled Compact Unitary" begin
     test_controlledCompactUnitary()
 end
+
+@testset "Test: Controlled not gate" begin
+    test_controlledNot()
+end
+
+@testset "Test: Controlled Pauli Y gate" begin
+    test_controlledPauliY()
+end
+
+@testset "Test: Controlled phase flip gate" begin
+    test_controlledPhaseFlip()
+end
+
+@testset "Test: Controlled phase shift gate" begin
+    test_controlledPhaseShift()
+
+end
+
+@testset "Test: Controlled rotate around axis gate" begin
+    test_controlledRotateAroundAxis()
+end
+
+
+@testset "Test: Controlled rotate X gate" begin
+    test_controlledRotateX()
+end
+
+@testset "Test: Controlled rotate Y gate" begin
+    test_controlledRotateY()
+end
+
+@testset "Test: Controlled rotate Z gate" begin
+    test_controlledRotateZ()
+end
+
+

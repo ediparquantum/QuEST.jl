@@ -4,10 +4,7 @@ module QuEST
     @reexport using QuEST_jll
     @reexport using Clang
     @reexport using JuliaFormatter
-    #
-   
-    #wrappers_file = joinpath(@__DIR__,"C/quest_julia_c_wrapper.jl")
-   #exports = Symbol.(get_function_struct_names(wrappers_file))
+    @reexport using LinearAlgebra
     
 export 
     c_shift_index,
@@ -19,10 +16,12 @@ export
     pauliOpType,
     QComplex,
     complex,
-    qComplex,
+    qComplex, 
     ComplexMatrix2,
     ComplexMatrix4,
     QVector,
+    qVector,
+    vector,
     phaseFunc,
     bitEncoding,
     PauliHamil,
@@ -185,7 +184,8 @@ export
     applyFullQFT,
     applyQFT,
     applyProjector,
-    unsafe_load_state_vec
+    unsafe_load_state_vec,
+    make_QuEST_matrix
    
     include("C/quest_julia_c_wrapper.jl")
     include("utils.jl")

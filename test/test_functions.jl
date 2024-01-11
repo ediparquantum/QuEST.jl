@@ -245,3 +245,339 @@ function test_controlledCompactUnitary()
     end
     destroyQuESTEnv(env)
 end
+
+function test_controlledNot()
+    env= createQuESTEnv()
+    for t=1:10    
+        numQubits = rand(2:12)
+        target = rand(1:numQubits)
+        control = rand(filter(x->x≠target, 1:numQubits))
+
+        qureg = createQureg(numQubits, env)
+        pauliX(qureg, control)
+        controlledNot(qureg, control, target)
+        state_vec = unsafe_load_state_vec(qureg.stateVec, 2^numQubits)
+        one_ind=2^(control-1)+2^(target-1)+1
+        for ind =1:2^numQubits
+            if ind == one_ind
+                @test state_vec[ind] ≈ Complex(1.0) atol = tolerance
+            else
+                @test state_vec[ind] ≈ Complex(0.0) atol = tolerance
+            end
+        end
+        destroyQureg(qureg, env)
+    end
+    destroyQuESTEnv(env)
+end
+
+function test_controlledPauliY()
+    env= createQuESTEnv()
+    for t=1:10
+        
+        numQubits = rand(2:12)
+        target = rand(1:numQubits)
+        control = rand(filter(x->x≠target, 1:numQubits))
+        qureg = createQureg(numQubits, env)
+        pauliX(qureg, control)
+        controlledPauliY(qureg, control, target)
+
+        state_vec = unsafe_load_state_vec(qureg.stateVec, 2^numQubits)
+        one_ind=2^(control-1)+2^(target-1)+1
+        for ind =1:2^numQubits
+            if ind == one_ind
+                @test state_vec[ind] ≈ Complex(1.0im) atol = tolerance
+            else
+                @test state_vec[ind] ≈ Complex(0.0) atol = tolerance
+            end
+        end
+        destroyQureg(qureg, env)
+    end
+    destroyQuESTEnv(env)
+end
+
+function test_controlledPhaseFlip()
+    env= createQuESTEnv()
+    for t=1:10
+        
+        numQubits = rand(2:12)
+        target = rand(1:numQubits)
+        control = rand(1:numQubits)
+        control = rand(filter(x->x≠target, 1:numQubits))
+
+        qureg = createQureg(numQubits, env)
+
+        pauliX(qureg, control)
+        pauliX(qureg, target)
+        controlledPhaseFlip(qureg, control, target)
+
+        state_vec = unsafe_load_state_vec(qureg.stateVec, 2^numQubits)
+        one_ind=2^(control-1)+2^(target-1)+1
+        for ind =1:2^numQubits
+            if ind == one_ind
+                @test state_vec[ind] ≈ Complex(-1.0) atol = tolerance
+            else
+                @test state_vec[ind] ≈ Complex(0.0) atol = tolerance
+            end
+        end
+        destroyQureg(qureg, env)
+    end
+    destroyQuESTEnv(env)
+end
+
+
+function test_controlledPhaseShift()
+    env= createQuESTEnv()
+    for t=1:10
+        
+        numQubits = rand(2:12)
+        target = rand(1:numQubits)
+        control = rand(filter(x->x≠target, 1:numQubits))
+        θ = rand(Float64)
+        qureg = createQureg(numQubits, env)
+
+        pauliX(qureg, control)
+        pauliX(qureg, target)
+        controlledPhaseShift(qureg, control, target, θ)
+
+        state_vec = unsafe_load_state_vec(qureg.stateVec, 2^numQubits)
+        one_ind=2^(control-1)+2^(target-1)+1
+        for ind =1:2^numQubits
+            if ind == one_ind
+                @test state_vec[ind] ≈ ℯ^(im*θ) atol = tolerance
+            else
+                @test state_vec[ind] ≈ 0 atol = tolerance
+            end
+        end
+        destroyQureg(qureg, env)
+    end
+    destroyQuESTEnv(env)
+end
+
+
+function test_controlledRotateAroundAxis()
+    env= createQuESTEnv()
+    X=Matrix([0 1.0;1 0])
+    Y=Matrix([0 -im;im 0])
+    Z=Matrix([1.0 0;0 -1.0])
+    for t=1:10
+        
+        numQubits = rand(2:12)
+        target = rand(1:numQubits)
+        control = rand(filter(x->x≠target, 1:numQubits))
+        θ = rand(Float64)
+        n̂ = rand(Float64, 3) 
+        n̂ /= norm(n̂)
+        U = ℯ^(-im*θ*(n̂[1]*X+n̂[2]*Y+n̂[3]*Z)/2)
+        qureg = createQureg(numQubits, env)
+        v = [1.0, 0.0]
+        v = U*v
+        pauliX(qureg, control)
+        
+        controlledRotateAroundAxis(qureg, control, target, θ, qVector(n̂))
+
+        state_vec = unsafe_load_state_vec(qureg.stateVec, 2^numQubits)
+        one_ind=2^(control-1)+2^(target-1)+1
+        zero_ind=2^(control-1)+1
+        for ind =1:2^numQubits
+            if ind == one_ind
+                @test state_vec[ind] ≈ v[2] atol = tolerance
+            elseif ind == zero_ind
+                @test state_vec[ind] ≈ v[1] atol = tolerance
+            else
+                @test state_vec[ind] ≈ Complex(0,0) atol = tolerance
+            end
+        end
+        destroyQureg(qureg, env)
+    end
+    destroyQuESTEnv(env)
+end
+
+function test_controlledRotateAroundAxis()
+    env= createQuESTEnv()
+    X=Matrix([0 1.0;1 0])
+    Y=Matrix([0 -im;im 0])
+    Z=Matrix([1.0 0;0 -1.0])
+    for t=1:10
+        
+        numQubits = rand(2:12)
+        target = rand(1:numQubits)
+        control = rand(filter(x->x≠target, 1:numQubits))
+        θ = rand(Float64)
+        n̂ = rand(Float64, 3) 
+        n̂ /= norm(n̂)
+        U = ℯ^(-im*θ*(n̂[1]*X+n̂[2]*Y+n̂[3]*Z)/2)
+        qureg = createQureg(numQubits, env)
+        v = [1.0, 0.0]
+        v = U*v
+        pauliX(qureg, control)
+        
+        controlledRotateAroundAxis(qureg, control, target, θ, qVector(n̂))
+
+        state_vec = unsafe_load_state_vec(qureg.stateVec, 2^numQubits)
+        one_ind=2^(control-1)+2^(target-1)+1
+        zero_ind=2^(control-1)+1
+        for ind =1:2^numQubits
+            if ind == one_ind
+                @test state_vec[ind] ≈ v[2] atol = tolerance
+            elseif ind == zero_ind
+                @test state_vec[ind] ≈ v[1] atol = tolerance
+            else
+                @test state_vec[ind] ≈ Complex(0,0) atol = tolerance
+            end
+        end
+        destroyQureg(qureg, env)
+    end
+    destroyQuESTEnv(env)
+end
+
+function test_controlledRotateAroundAxis()
+    env= createQuESTEnv()
+    X=Matrix([0 1.0;1 0])
+    Y=Matrix([0 -im;im 0])
+    Z=Matrix([1.0 0;0 -1.0])
+    for t=1:10
+        
+        numQubits = rand(2:12)
+        target = rand(1:numQubits)
+        control = rand(filter(x->x≠target, 1:numQubits))
+        θ = rand(Float64)
+        n̂ = rand(Float64, 3) 
+        n̂ /= norm(n̂)
+        U = ℯ^(-im*θ*(n̂[1]*X+n̂[2]*Y+n̂[3]*Z)/2)
+        qureg = createQureg(numQubits, env)
+        v = [1.0, 0.0]
+        v = U*v
+        pauliX(qureg, control)
+        
+        controlledRotateAroundAxis(qureg, control, target, θ, qVector(n̂))
+
+        state_vec = unsafe_load_state_vec(qureg.stateVec, 2^numQubits)
+        one_ind=2^(control-1)+2^(target-1)+1
+        zero_ind=2^(control-1)+1
+        for ind =1:2^numQubits
+            if ind == one_ind
+                @test state_vec[ind] ≈ v[2] atol = tolerance
+            elseif ind == zero_ind
+                @test state_vec[ind] ≈ v[1] atol = tolerance
+            else
+                @test state_vec[ind] ≈ Complex(0,0) atol = tolerance
+            end
+        end
+        destroyQureg(qureg, env)
+    end
+    destroyQuESTEnv(env)
+end
+
+
+function test_controlledRotateX()
+    env= createQuESTEnv()
+    X=Matrix([0 1.0;1 0])
+    Y=Matrix([0 -im;im 0])
+    Z=Matrix([1.0 0;0 -1.0])
+    for t=1:10
+        
+        numQubits = rand(2:12)
+        target = rand(1:numQubits)
+        control = rand(filter(x->x≠target, 1:numQubits))
+        θ = rand(Float64)
+        
+        U = ℯ^(-im*θ*X/2)
+        qureg = createQureg(numQubits, env)
+        v = [1.0, 0.0]
+        v = U*v
+        pauliX(qureg, control)
+        
+        controlledRotateX(qureg, control, target, θ)
+
+        state_vec = unsafe_load_state_vec(qureg.stateVec, 2^numQubits)
+        one_ind=2^(control-1)+2^(target-1)+1
+        zero_ind=2^(control-1)+1
+        for ind =1:2^numQubits
+            if ind == one_ind
+                @test state_vec[ind] ≈ v[2] atol = tolerance
+            elseif ind == zero_ind
+                @test state_vec[ind] ≈ v[1] atol = tolerance
+            else
+                @test state_vec[ind] ≈ Complex(0,0) atol = tolerance
+            end
+        end
+        destroyQureg(qureg, env)
+    end
+    destroyQuESTEnv(env)
+end
+
+function test_controlledRotateY()
+    env= createQuESTEnv()
+    X=Matrix([0 1.0;1 0])
+    Y=Matrix([0 -im;im 0])
+    Z=Matrix([1.0 0;0 -1.0])
+    for t=1:10
+        
+        numQubits = rand(2:12)
+        target = rand(1:numQubits)
+        control = rand(filter(x->x≠target, 1:numQubits))
+        θ = rand(Float64)
+        
+        U = ℯ^(-im*θ*Y/2)
+        qureg = createQureg(numQubits, env)
+        v = [1.0, 0.0]
+        v = U*v
+        pauliX(qureg, control)
+        
+        controlledRotateY(qureg, control, target, θ)
+
+        state_vec = unsafe_load_state_vec(qureg.stateVec, 2^numQubits)
+        one_ind=2^(control-1)+2^(target-1)+1
+        zero_ind=2^(control-1)+1
+        for ind =1:2^numQubits
+            if ind == one_ind
+                @test state_vec[ind] ≈ v[2] atol = tolerance
+            elseif ind == zero_ind
+                @test state_vec[ind] ≈ v[1] atol = tolerance
+            else
+                @test state_vec[ind] ≈ Complex(0,0) atol = tolerance
+            end
+        end
+        destroyQureg(qureg, env)
+    end
+    destroyQuESTEnv(env)
+end
+
+
+
+function test_controlledRotateZ()
+    env= createQuESTEnv()
+    X=Matrix([0 1.0;1 0])
+    Y=Matrix([0 -im;im 0])
+    Z=Matrix([1.0 0;0 -1.0])
+    for t=1:10
+        
+        numQubits = rand(2:12)
+        target = rand(1:numQubits)
+        control = rand(filter(x->x≠target, 1:numQubits))
+        θ = rand(Float64)
+        
+        U = ℯ^(-im*θ*Z/2)
+        qureg = createQureg(numQubits, env)
+        v = [1.0, 0.0]
+        v = U*v
+        pauliX(qureg, control)
+        
+        controlledRotateZ(qureg, control, target, θ)
+
+        state_vec = unsafe_load_state_vec(qureg.stateVec, 2^numQubits)
+        one_ind=2^(control-1)+2^(target-1)+1
+        zero_ind=2^(control-1)+1
+        for ind =1:2^numQubits
+            if ind == one_ind
+                @test state_vec[ind] ≈ v[2] atol = tolerance
+            elseif ind == zero_ind
+                @test state_vec[ind] ≈ v[1] atol = tolerance
+            else
+                @test state_vec[ind] ≈ Complex(0,0) atol = tolerance
+            end
+        end
+        destroyQureg(qureg, env)
+    end
+    destroyQuESTEnv(env)
+end
