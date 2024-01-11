@@ -37,3 +37,9 @@ For more in depth tutorials see (`C` based)
 
 
 
+
+
+## Acknowledgements
+
+Some tests and functions were inspired and directly used from the public repository [Dighvijay: QuEST.jl](https://github.com/Dighvijay/QuEST.jl) made possible from the efforts of [Dighvijay](https://github.com/Dighvijay) on GitHub. We thank them for their valuable contributions.
+
