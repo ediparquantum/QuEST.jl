@@ -23,6 +23,25 @@ or
 ] add https://github.com/fieldofnodes/QuEST.jl
 ```
 
+```julia
+using QuEST
+num_qubits = 2
+env = createQuESTEnv()
+  
+# create a 2 qubit register in the zero state
+qubits = createQureg(num_qubits, env)
+initZeroState(qubits)
+
+# apply circuit
+hadamard(qubits, 1)
+controlledNot(qubits, 1, 2)
+measure(qubits, 2)
+
+# unload QuEST
+destroyQureg(qubits, env)
+destroyQuESTEnv(env)
+```
+
 ## Information direct from the QuEST developers
 For more in depth tutorials see (`C` based)
 

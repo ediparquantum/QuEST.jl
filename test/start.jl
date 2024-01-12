@@ -1,13 +1,27 @@
 using Pkg
 Pkg.activate(".")
-include("src/QuEST.jl")
+include("../src/QuEST.jl")
 using .QuEST
 using Test
 using RandomMatrices: Haar
 using LinearAlgebra
 tolerance = 1e-10
 
+num_qubits = 3
+env = createQuESTEnv()
+  
+# create a 2 qubit register in the zero state
+qubits = createQureg(2, env)
+initZeroState(qubits)
 
+# apply circuit
+hadamard(qubits, 1)
+controlledNot(qubits, 1, 2)
+measure(qubits, 2)
+
+# unload QuEST
+destroyQureg(qubits, env)
+destroyQuESTEnv(env)
 
 
 function test_multiControlledUnitary()
