@@ -77,6 +77,27 @@ function qVector(v::Vector)
   QVector(v[1], v[2], v[3])
 end
 
+
+function make_QuEST_matrix_2x2(U ::Matrix{Complex{Float64}}) ::ComplexMatrix2
+  size(U) != (2,2) && error("U must be 2x2")
+  u = ComplexMatrix2(
+      ( (real(U[1,1]), real(U[1,2])), (real(U[2,1]), real(U[2,2])) ),
+      ( (imag(U[1,1]), imag(U[1,2])), (imag(U[2,1]), imag(U[2,2])) )  )
+  return u
+end
+
+function make_QuEST_matrix_4x4(U ::Matrix{Complex{Float64}}) ::ComplexMatrix4
+  size(U) != (4,4) && error("U must be 4x4")
+  u = ComplexMatrix4( ( ( real(U[1,1]), real(U[1,2]), real(U[1,3]), real(U[1,4]) ),
+                        ( real(U[2,1]), real(U[2,2]), real(U[2,3]), real(U[2,4]) ),
+                        ( real(U[3,1]), real(U[3,2]), real(U[3,3]), real(U[3,4]) ),
+                        ( real(U[4,1]), real(U[4,2]), real(U[4,3]), real(U[4,4]) ) ),
+                      ( ( imag(U[1,1]), imag(U[1,2]), imag(U[1,3]), imag(U[1,4]) ),
+                        ( imag(U[2,1]), imag(U[2,2]), imag(U[2,3]), imag(U[2,4]) ),
+                        ( imag(U[3,1]), imag(U[3,2]), imag(U[3,3]), imag(U[3,4]) ),
+                        ( imag(U[4,1]), imag(U[4,2]), imag(U[4,3]), imag(U[4,4]) ) )  )
+end
+
 function make_QuEST_matrix(M ::Matrix{Base.Complex{Float64}}) ::ComplexMatrixN
   (R,C) = size(M)
   @assert R==C
@@ -96,3 +117,25 @@ function make_QuEST_matrix(M ::Matrix{Base.Complex{Float64}}) ::ComplexMatrixN
   end
   return MQ
 end
+
+pauliX_matrix()=Matrix([0 1.0;1 0])
+pauliY_matrix()=Matrix([0 -im;im 0])
+pauliZ_matrix()=Matrix([1.0 0;0 -1.0])
+hadamard_matrix()=Matrix([1.0 1.0;1.0 -1.0])/sqrt(2)
+
+function create_state_vec_zero_state(num_qubits)
+  v = zeros(Float64, 2^num_qubits)
+  v[1]=1
+  v
+end
+
+function apply_hadamard_to_state_vector_at_target_index(state_vec, target)
+  H = hadamard_matrix()
+  num_qubits = log2(length(state_vec)) |> Int
+  i_right=1.0*Matrix(I, 2^(target-1), 2^(target-1))
+  un_changed_qubits = num_qubits-target
+  i_left =1.0*Matrix(I, 2^un_changed_qubits, 2^un_changed_qubits)
+  U=kron(i_left, H, i_right)
+  U*state_vec
+end
+

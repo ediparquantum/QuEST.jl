@@ -3,7 +3,7 @@
 ## Details
 
 1. Quantum Exact Simulation Toolkit is a high performance simulator of quantum circuits, state-vectors and density matrices.
-2. `QuEST.jl` is a wrapper for [`QuEST`](https://github.com/QuEST-Kit/QuEST), which is written in `C`. `QuEST.jl` was compiled using [`BinaryBuilder.jl`](https://github.com/JuliaPackaging/BinaryBuilder.jl/tree/master), which is a systme for the compilation of binary dependencies --whose aim it to *just work* anywhere the official Julia distribution does.
+2. `QuEST.jl` is a wrapper for [`QuEST`](https://github.com/QuEST-Kit/QuEST), which is written in `C`. `QuEST.jl` was compiled using [`BinaryBuilder.jl`](https://github.com/JuliaPackaging/BinaryBuilder.jl/tree/master), which is a system for the compilation of binary dependencies --whose aim it to *just work* anywhere the official Julia distribution does.
 3. Function calls, enumerators, structs, etc were wrapped automatically using [`Clang.jl`](https://github.com/JuliaInterop/Clang.jl), which provided the needed `C` bindings for the Julia interface.
 4. **Note:** Julia is indexed starting at $1$ and goes until $N$ items in an $N-$ element list. `C` indexes an $N-$ element list from $0$ to $N-1$.
 5. To give the Julia user uniform interface, every `QuEST` call using an integer index, will first shift the index to be in the $0$ indexed form inside the Julia function. The user should be aware of this, but it is the aim of the `QuEST.jl` parckage wrapper writer(s) to handle this for the user.
@@ -17,7 +17,7 @@ using Pkg
 Pkg.add(url="https://github.com/fieldofnodes/QuEST.jl")
 ```
 
-or 
+or
 
 ```julia
 ] add https://github.com/fieldofnodes/QuEST.jl

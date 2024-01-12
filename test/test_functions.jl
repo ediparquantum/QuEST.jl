@@ -581,3 +581,249 @@ function test_controlledRotateZ()
     end
     destroyQuESTEnv(env)
 end
+
+
+function test_controlledTwoQubitUnitary()
+    env= createQuESTEnv()
+    X=Matrix([0 1.0;1 0])
+    Y=Matrix([0 -im;im 0])
+    Z=Matrix([1.0 0;0 -1.0])
+    for t=1:10
+        
+        numQubits = rand(3:12)
+    
+        qureg = createQureg(numQubits, env)
+        v = zeros(Float64, 2^numQubits)
+        v[1]=1.0
+        M_j = rand(Haar(2), 4)
+        res = numQubits-3
+        Idm = 1.0*Matrix(I,2^res, 2^res)
+        U=kron(Idm, M_j, X)
+        v=U*v
+        
+        pauliX(qureg, 1)
+        controlledTwoQubitUnitary(qureg, 1, 2, 3, M_j)
+
+        state_vec = unsafe_load_state_vec(qureg.stateVec, 2^numQubits)
+        
+        for ind =1:2^numQubits
+            @test state_vec[ind] ≈ v[ind] atol = tolerance
+        end
+        destroyQureg(qureg, env)
+    end
+    destroyQuESTEnv(env)
+end
+
+function test_controlledUnitary()
+    env= createQuESTEnv()
+    for t=1:10
+        numQubits = rand(2:12)
+        qureg = createQureg(numQubits, env)
+        target = rand(1:numQubits)
+        control = rand(filter(x->x≠target, 1:numQubits))
+        M_j = rand(Haar(2), 2)
+        v = [1.0, 0.0]
+        v = M_j*v
+        pauliX(qureg, control)
+        controlledUnitary(qureg, control, target, M_j)
+        state_vec = unsafe_load_state_vec(qureg.stateVec, 2^numQubits)
+        one_ind=2^(control-1)+2^(target-1)+1
+        zero_ind=2^(control-1)+1
+        for ind =1:2^numQubits
+            if ind == one_ind
+                @test state_vec[ind] ≈ v[2] atol = tolerance
+            elseif ind == zero_ind
+                @test state_vec[ind] ≈ v[1] atol = tolerance
+            else
+                @test state_vec[ind] ≈ Complex(0,0) atol = tolerance
+            end
+        end
+        destroyQureg(qureg, env)
+    end
+    destroyQuESTEnv(env)
+end
+
+
+function test_hadamard()
+    env= createQuESTEnv()
+    for t=1:10
+        numQubits = rand(1:12)
+        qureg = createQureg(numQubits, env)
+        target = rand(1:numQubits)
+        state_vec = create_state_vec_zero_state(numQubits)
+        state_vec=apply_hadamard_to_state_vector_at_target_index(state_vec, target)
+        hadamard(qureg, target)
+        state_vec = unsafe_load_state_vec(qureg.stateVec, 2^numQubits)
+        for ind =1:2^numQubits
+            @test state_vec[ind] ≈ state_vec[ind] atol = tolerance
+        end
+        destroyQureg(qureg, env)
+    end
+    destroyQuESTEnv(env)
+end
+
+function test_multiControlledMultiQubitUnitary()
+   
+    env= createQuESTEnv()
+    for t=1:10
+        numQubits = rand(4:12)
+        num_ctrls = rand(2:numQubits-2)
+        num_targs = rand(2:numQubits-num_ctrls)
+
+        ctrls = [x for x in 1:num_ctrls]
+        targs = [x for x in num_ctrls+1:num_ctrls+num_targs]
+        #targs = Cint.([x for x in num_ctrls:num_ctrls+num_targs-1])
+        #print(ctrls)
+        #print(targs)
+        
+        M = rand(Haar(2), 2^num_targs)
+        
+    
+        qureg = createQureg(numQubits, env)
+        
+        for ind in ctrls
+            pauliX(qureg, ind)
+        end
+        
+        multiControlledMultiQubitUnitary(qureg, ctrls, targs, M)
+        
+        state_vec = unsafe_load_state_vec(qureg.stateVec, 2^numQubits)
+
+        X=Matrix([0 1.0;1 0])
+        big_X=Matrix([0 1.0;1 0])
+        for iter = 1:num_ctrls-1
+            big_X=kron(big_X, X)
+        end
+        res = numQubits-num_targs-num_ctrls
+        Idm = 1.0*Matrix(I,2^res, 2^res)
+        U=kron(Idm, M, big_X)
+        v = zeros(Float64, 2^numQubits)
+        v[1]=1.0
+        v=U*v
+        for ind = 1:2^numQubits
+            @test state_vec[ind] ≈ v[ind] atol = tolerance
+        end
+        destroyQureg(qureg, env)
+    end
+    destroyQuESTEnv(env)
+    
+end
+
+function test_multiControlledPhaseFlip()
+    env= createQuESTEnv()
+    for t=1:10
+        
+        numQubits = rand(2:12)
+        num_ctrls = rand(1:numQubits)
+
+        ctrls = [x for x in 1:num_ctrls]
+
+        qureg = createQureg(numQubits, env)
+
+        for ind = 1:num_ctrls
+            pauliX(qureg, ind)
+        end
+
+        multiControlledPhaseFlip(qureg, ctrls)
+
+        state_vec = unsafe_load_state_vec(qureg.stateVec, 2^numQubits)
+        one_ind=2^(num_ctrls)
+        for ind =1:2^numQubits
+            if ind == one_ind
+                @test state_vec[ind] ≈ Complex(-1,0) atol = tolerance
+            else
+                @test state_vec[ind] ≈ Complex(0,0) atol = tolerance
+            end
+        end
+        destroyQureg(qureg, env)
+    end
+    destroyQuESTEnv(env)
+end
+
+function test_multiControlledPhaseShift()
+    env= createQuESTEnv()
+    for t=1:10
+        
+        numQubits = rand(2:12)
+        num_ctrls = rand(1:numQubits)
+
+        ctrls = [x for x in 1:num_ctrls]
+        θ = rand(Float64)
+        qureg = createQureg(numQubits, env)
+
+        for ind in ctrls
+            pauliX(qureg, ind)
+        end
+        
+        multiControlledPhaseShift(qureg, ctrls, θ)
+
+        state_vec = unsafe_load_state_vec(qureg.stateVec, 2^numQubits)
+        one_ind=2^(num_ctrls)
+        for ind =1:2^numQubits
+            if ind == one_ind
+                @test state_vec[ind] ≈ℯ^(im*θ) atol = tolerance
+            else
+                @test state_vec[ind] ≈ Complex(0,0) atol = tolerance
+            end
+        end
+        destroyQureg(qureg, env)
+    end
+    destroyQuESTEnv(env)
+end
+
+
+function test_multiControlledTwoQubitUnitary()
+    env= createQuESTEnv()
+    X=pauliX_matrix()
+   
+    numQubits = 5
+    qureg = createQureg(numQubits, env)
+    num_ctrls = 3
+    targ1,targ2 = 4,5
+
+    ctrls = [1,2,3]
+    v = create_state_vec_zero_state(numQubits)
+    M = rand(Haar(2), 4)
+    
+    big_X = reduce(kron,[X for x in Base.OneTo(num_ctrls)])
+    
+    res = numQubits-2-num_ctrls
+    Idm = 1.0*Matrix(I,2^res, 2^res)
+    U=kron(M,big_X)
+    v=U*v
+    
+    [pauliX(qureg, ind) for ind in ctrls]
+    multiControlledTwoQubitUnitary(qureg, ctrls, targ1,targ2, M)
+    state_vec = unsafe_load_state_vec(qureg.stateVec, 2^numQubits)
+    @test state_vec ≈ v atol = tolerance
+    destroyQureg(qureg, env)
+
+    destroyQuESTEnv(env)
+end
+
+
+
+
+
+
+
+
+
+
+
+
+function test_sync()
+    env= createQuESTEnv()
+    numQubits = rand(3:12)
+    qureg = createQureg(numQubits, env)
+    state = rand(Complex{Float64}, 2^numQubits)
+    state /= norm(state)
+    initStateFromAmps(qureg, real.(state), imag.(state))
+
+    syncQuESTEnv(env)
+    @test syncQuESTSuccess(1) == 1
+
+    destroyQureg(qureg, env)
+    destroyQuESTEnv(env)
+
+end

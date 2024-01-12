@@ -185,7 +185,15 @@ export
     applyQFT,
     applyProjector,
     unsafe_load_state_vec,
-    make_QuEST_matrix
+    make_QuEST_matrix,
+    make_QuEST_matrix_2x2,
+    make_QuEST_matrix_4x4,
+    pauliX_matrix,
+    pauliY_matrix,
+    pauliZ_matrix,
+    hadamard_matrix,
+    create_state_vec_zero_state,
+    apply_hadamard_to_state_vector_at_target_index
    
     include("C/quest_julia_c_wrapper.jl")
     include("utils.jl")

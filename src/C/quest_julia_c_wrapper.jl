@@ -130,6 +130,11 @@ struct QuESTEnv
     cuConfig::Ptr{Ptr{Cvoid}}
 end
 
+
+
+
+
+
 function createQureg(numQubits, env)
     @ccall libquest.createQureg(numQubits::Cint, env::QuESTEnv)::Qureg
 end
@@ -313,10 +318,13 @@ function controlledPhaseShift(qureg, idQubit1, idQubit2, angle)
     @ccall libquest.controlledPhaseShift(qureg::Qureg, idQubit1::Cint, idQubit2::Cint, angle::Cdouble)::Cvoid
 end
 
-function multiControlledPhaseShift(qureg, controlQubits, numControlQubits, angle)
-    controlQubits = [c_shift_index(cq) for cq in controlQubits]
-    @ccall libquest.multiControlledPhaseShift(qureg::Qureg, controlQubits::Ptr{Cint}, numControlQubits::Cint, angle::Cdouble)::Cvoid
+function multiControlledPhaseShift(qureg, controlQubits, angle)
+    controlQubits = Cint.([c_shift_index(cq) for cq in controlQubits])
+    @ccall libquest.multiControlledPhaseShift(qureg::Qureg, pointer(controlQubits)::Ptr{Cint}, length(controlQubits)::Cint, angle::Cdouble)::Cvoid
 end
+
+
+
 
 function controlledPhaseFlip(qureg, idQubit1, idQubit2)
     idQubit1 = c_shift_index(idQubit1)
@@ -324,10 +332,13 @@ function controlledPhaseFlip(qureg, idQubit1, idQubit2)
     @ccall libquest.controlledPhaseFlip(qureg::Qureg, idQubit1::Cint, idQubit2::Cint)::Cvoid
 end
 
-function multiControlledPhaseFlip(qureg, controlQubits, numControlQubits) 
-    controlQubits = [c_shift_index(cq) for cq in controlQubits]
-    @ccall libquest.multiControlledPhaseFlip(qureg::Qureg, controlQubits::Ptr{Cint}, numControlQubits::Cint)::Cvoid
+function multiControlledPhaseFlip(qureg, controlQubits) 
+    controlQubits = Cint.([c_shift_index(cq) for cq in controlQubits])
+    @ccall libquest.multiControlledPhaseFlip(qureg::Qureg, pointer(controlQubits)::Ptr{Cint}, length(controlQubits)::Cint)::Cvoid
 end
+
+
+
 
 function sGate(qureg, targetQubit)
     targetQubit = c_shift_index(targetQubit)
@@ -474,6 +485,11 @@ end
 function controlledUnitary(qureg, controlQubit, targetQubit, u)
     controlQubit = c_shift_index(controlQubit)
     targetQubit = c_shift_index(targetQubit)
+    !(0 ≤ controlQubit < qureg.numQubitsRepresented) && error("controlQubit must be in [0, qureg.numQubitsRepresented)")
+    !(0 ≤ targetQubit < qureg.numQubitsRepresented) && error("targetQubit must be in [0, qureg.numQubitsRepresented)")
+    controlQubit == targetQubit && error("controlQubit must be different from targetQubit")
+    u = make_QuEST_matrix_2x2(u)
+
     @ccall libquest.controlledUnitary(qureg::Qureg, controlQubit::Cint, targetQubit::Cint, u::ComplexMatrix2)::Cvoid
 end
 
@@ -694,19 +710,44 @@ function twoQubitUnitary(qureg, targetQubit1, targetQubit2, u)
     @ccall libquest.twoQubitUnitary(qureg::Qureg, targetQubit1::Cint, targetQubit2::Cint, u::ComplexMatrix4)::Cvoid
 end
 
+
+
 function controlledTwoQubitUnitary(qureg, controlQubit, targetQubit1, targetQubit2, u)
     controlQubit = c_shift_index(controlQubit)
     targetQubit1 = c_shift_index(targetQubit1)
     targetQubit2 = c_shift_index(targetQubit2)
+
+    !(0 ≤ controlQubit < qureg.numQubitsRepresented) && error("controlQubit must be in [0, qureg.numQubitsRepresented)")
+    !(0 ≤ targetQubit1 < qureg.numQubitsRepresented) && error("targetQubit1 must be in [0, qureg.numQubitsRepresented)")
+    !(0 ≤ targetQubit2 < qureg.numQubitsRepresented) && error("targetQubit2 must be in [0, qureg.numQubitsRepresented)")
+    !(targetQubit1 != targetQubit2) && error("targetQubit1 must be different from targetQubit2")
+    !(controlQubit ∉ [targetQubit1,targetQubit2]) && error("controlQubit must be different from targetQubit1 and targetQubit2")
+    u = make_QuEST_matrix_4x4(u)
+
     @ccall libquest.controlledTwoQubitUnitary(qureg::Qureg, controlQubit::Cint, targetQubit1::Cint, targetQubit2::Cint, u::ComplexMatrix4)::Cvoid
 end
 
-function multiControlledTwoQubitUnitary(qureg, controlQubits, numControlQubits, targetQubit1, targetQubit2, u)
-    controlQubits = [c_shift_index(cq) for cq in controlQubits]
+function multiControlledTwoQubitUnitary(qureg, controlQubits, targetQubit1, targetQubit2, u)
+    controlQubits = Cint.([c_shift_index(cq) for cq in controlQubits])
     targetQubit1 = c_shift_index(targetQubit1)
     targetQubit2 = c_shift_index(targetQubit2)
-    @ccall libquest.multiControlledTwoQubitUnitary(qureg::Qureg, controlQubits::Ptr{Cint}, numControlQubits::Cint, targetQubit1::Cint, targetQubit2::Cint, u::ComplexMatrix4)::Cvoid
+
+    !(0 ≤ length(controlQubits) ≤ qureg.numQubitsRepresented -2) && error("number of controlQubits must be in [0, qureg.numQubitsRepresented -2]")
+    !(0 ≤ targetQubit1 < qureg.numQubitsRepresented) && error("targetQubit1 must be in [0, qureg.numQubitsRepresented)")
+    !(0 ≤ targetQubit2 < qureg.numQubitsRepresented) && error("targetQubit2 must be in [0, qureg.numQubitsRepresented)")
+    targetQubit1 == targetQubit2 && error("targetQubit1 must be different from targetQubit2")
+    !(targetQubit1 ∉ controlQubits) && error("targetQubit1 must be different from controlQubits")
+    !(targetQubit2 ∉ controlQubits) && error("targetQubit2 must be different from controlQubits")
+
+    @ccall libquest.multiControlledTwoQubitUnitary(qureg::Qureg, pointer(controlQubits)::Ptr{Cint}, length(controlQubits)::Cint, targetQubit1::Cint, targetQubit2::Cint, make_QuEST_matrix_4x4(u)::ComplexMatrix4)::Cvoid
 end
+
+
+
+
+
+
+
 
 function multiQubitUnitary(qureg, targs, numTargs, u)
     targs = [c_shift_index(tq) for tq in targs]
@@ -719,11 +760,18 @@ function controlledMultiQubitUnitary(qureg, ctrl, targs, numTargs, u)
     @ccall libquest.controlledMultiQubitUnitary(qureg::Qureg, ctrl::Cint, targs::Ptr{Cint}, numTargs::Cint, u::ComplexMatrixN)::Cvoid
 end
 
-function multiControlledMultiQubitUnitary(qureg, ctrls, numCtrls, targs, numTargs, u)
-    ctrls = [c_shift_index(cq) for cq in ctrls]
-    targs = [c_shift_index(tq) for tq in targs]
-    @ccall libquest.multiControlledMultiQubitUnitary(qureg::Qureg, ctrls::Ptr{Cint}, numCtrls::Cint, targs::Ptr{Cint}, numTargs::Cint, u::ComplexMatrixN)::Cvoid
+function multiControlledMultiQubitUnitary(qureg, ctrls, targs, u)
+    ctrls = Cint.([c_shift_index(cq) for cq in ctrls])
+    targs = Cint.([c_shift_index(tq) for tq in targs])
+
+    numCtrls = Cint(length(ctrls))
+    numTargs = Cint(length(targs))
+    @ccall libquest.multiControlledMultiQubitUnitary(qureg::Qureg, pointer(ctrls)::Ptr{Cint}, numCtrls::Cint, pointer(targs)::Ptr{Cint}, numTargs::Cint, make_QuEST_matrix(u)::ComplexMatrixN)::Cvoid
 end
+
+
+
+
 
 function mixKrausMap(qureg, target, ops, numOps)
     target = c_shift_index(target)

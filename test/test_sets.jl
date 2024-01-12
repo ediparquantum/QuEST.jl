@@ -77,4 +77,40 @@ end
     test_controlledRotateZ()
 end
 
+@testset "Test: Controlled two qubit unitary gate" begin
+    test_controlledTwoQubitUnitary()
+end
 
+@testset "Test: Controlled Unitary" begin
+    test_controlledUnitary()
+end
+
+@testset "Test: Hadamard gate" begin
+    test_hadamard()
+end
+
+@testset "Test: Multi Controlled Multi Qubit Unitary" begin
+    test_multiControlledMultiQubitUnitary()
+end
+
+
+@testset "Test: Multi Controlled Phase Flip" begin
+    test_multiControlledPhaseFlip()
+end
+
+
+@testset "Test: Multi Controlled Phase Shift" begin
+    test_multiControlledPhaseShift()
+end
+
+@testset "Test: Multi Controlled Two Qubit Unitary" begin
+    test_multiControlledTwoQubitUnitary()
+end
+
+
+
+
+
+@testset "Test: Sync" begin
+    test_sync()
+end
