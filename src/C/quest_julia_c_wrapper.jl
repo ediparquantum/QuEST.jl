@@ -26,6 +26,8 @@ struct ComplexArray
     imag::Ptr{Cdouble}
 end
 
+
+
 @enum pauliOpType::UInt32 begin
     PAULI_I = 0
     PAULI_X = 1
@@ -225,6 +227,21 @@ end
 
 function diagonalUnitary(qureg, targets, numTargets, op)
     @ccall libquest.diagonalUnitary(qureg::Qureg, targets::Ptr{Cint}, numTargets::Cint, op::SubDiagonalOp)::Cvoid
+end
+
+function controlledMultiQubitUnitary(qureg, ctrl, targs, numTargs, u)
+    ctrl = c_shift_index(ctrl)
+    targs = [c_shift_index(tq) for tq in targs]
+    @ccall libquest.controlledMultiQubitUnitary(qureg::Qureg, ctrl::Cint, targs::Ptr{Cint}, numTargs::Cint, u::ComplexMatrixN)::Cvoid
+end
+
+function multiControlledMultiQubitUnitary(qureg, ctrls, targs, u)
+    ctrls = Cint.([c_shift_index(cq) for cq in ctrls])
+    targs = Cint.([c_shift_index(tq) for tq in targs])
+
+    numCtrls = Cint(length(ctrls))
+    numTargs = Cint(length(targs))
+    @ccall libquest.multiControlledMultiQubitUnitary(qureg::Qureg, pointer(ctrls)::Ptr{Cint}, numCtrls::Cint, pointer(targs)::Ptr{Cint}, numTargs::Cint, make_QuEST_matrix(u)::ComplexMatrixN)::Cvoid
 end
 
 function applyGateSubDiagonalOp(qureg, targets, numTargets, op)
@@ -575,6 +592,38 @@ function calcDensityInnerProduct(rho1, rho2)
     @ccall libquest.calcDensityInnerProduct(rho1::Qureg, rho2::Qureg)::Cdouble
 end
 
+function calcPurity(qureg)
+    @ccall libquest.calcPurity(qureg::Qureg)::Cdouble
+end
+
+function calcFidelity(qureg, pureState)
+    @ccall libquest.calcFidelity(qureg::Qureg, pureState::Qureg)::Cdouble
+end
+
+function calcExpecPauliProd(qureg, targetQubits, pauliCodes, workspace)
+    targetQubits = pointer(Cint.([c_shift_index(tq) for tq in targetQubits]))
+    pauliCodes = [get_pauli_code(str) for str in pauliCodes] |> pointer
+    !(length(targetQubits) == length(pauliCodes)) && error("targetQubits and pauliCodes must have the same length")
+    numTargets = length(targetQubits)
+    @ccall libquest.calcExpecPauliProd(qureg::Qureg, targetQubits::Ptr{Cint}, pauliCodes::Ptr{pauliOpType}, numTargets::Cint, workspace::Qureg)::Cdouble
+end
+
+function calcExpecPauliSum(qureg, allPauliCodes, termCoeffs, workspace)
+    numSumTerms = length(termCoeffs)
+    !(numSumTerms*qureg.numQubitsRepresented == length(allPauliCodes)) && error("There must be the same number of Pauli codes (I,X,Y or Z) as length total sum terms multiplied by the number of qubits represented by qureg (e.g. 2 qubits and 2 terms = 4 codes)")
+    allPauliCodes = [get_pauli_code(str) for str in allPauliCodes] |> pointer
+    termCoeffs = pointer(termCoeffs)
+    @ccall libquest.calcExpecPauliSum(qureg::Qureg, allPauliCodes::Ptr{pauliOpType}, termCoeffs::Ptr{Cdouble}, numSumTerms::Cint, workspace::Qureg)::Cdouble
+end
+
+function calcExpecPauliHamil(qureg, hamil, workspace)
+    @ccall libquest.calcExpecPauliHamil(qureg::Qureg, hamil::PauliHamil, workspace::Qureg)::Cdouble
+end
+
+function calcHilbertSchmidtDistance(a, b)
+    @ccall libquest.calcHilbertSchmidtDistance(a::Qureg, b::Qureg)::Cdouble
+end
+
 function seedQuESTDefault(env)
     @ccall libquest.seedQuESTDefault(env::Ptr{QuESTEnv})::Cvoid
 end
@@ -608,60 +657,143 @@ function writeRecordedQASMToFile(qureg, filename)
 end
 
 function mixDephasing(qureg, targetQubit, prob)
+    test_is_density_matrix(qureg)
+    test_is_valid_probability(prob,0.5)
+    test_is_in_qubit_range(qureg, targetQubit)
     targetQubit = c_shift_index(targetQubit)
     @ccall libquest.mixDephasing(qureg::Qureg, targetQubit::Cint, prob::Cdouble)::Cvoid
 end
 
 function mixTwoQubitDephasing(qureg, qubit1, qubit2, prob)
+    test_is_density_matrix(qureg)
+    test_is_valid_probability(prob,0.75)
+    test_is_in_qubit_range(qureg, qubit1)
+    test_is_in_qubit_range(qureg, qubit2)
     qubit1 = c_shift_index(qubit1)
     qubit2 = c_shift_index(qubit2)
     @ccall libquest.mixTwoQubitDephasing(qureg::Qureg, qubit1::Cint, qubit2::Cint, prob::Cdouble)::Cvoid
 end
 
 function mixDepolarising(qureg, targetQubit, prob)
+    test_is_density_matrix(qureg)
+    test_is_valid_probability(prob,0.75)
+    test_is_in_qubit_range(qureg, targetQubit) 
     targetQubit = c_shift_index(targetQubit)
     @ccall libquest.mixDepolarising(qureg::Qureg, targetQubit::Cint, prob::Cdouble)::Cvoid
 end
 
 function mixDamping(qureg, targetQubit, prob)
+    test_is_density_matrix(qureg)
+    test_is_probability(prob)
+    test_is_in_qubit_range(qureg, targetQubit) 
     targetQubit = c_shift_index(targetQubit)
     @ccall libquest.mixDamping(qureg::Qureg, targetQubit::Cint, prob::Cdouble)::Cvoid
 end
 
 function mixTwoQubitDepolarising(qureg, qubit1, qubit2, prob)
+    test_is_density_matrix(qureg)
+    test_is_valid_probability(prob, 15/16)
+    test_is_in_qubit_range(qureg, qubit1) 
+    test_is_in_qubit_range(qureg, qubit2) 
     qubit1 = c_shift_index(qubit1)
     qubit2 = c_shift_index(qubit2)
     @ccall libquest.mixTwoQubitDepolarising(qureg::Qureg, qubit1::Cint, qubit2::Cint, prob::Cdouble)::Cvoid
 end
 
-function mixPauli(qureg, targetQubit, probX, probY, probZ)
+function mixPauli(qureg, targetQubit, prob)
+    probX, probY, probZ = prob
+    test_is_density_matrix(qureg)
+    test_is_in_qubit_range(qureg, targetQubit)
+    test_is_valid_probability(probX, 1 - probX - probY - probZ)
+    test_is_valid_probability(probY, 1 - probX - probY - probZ)
+    test_is_valid_probability(probZ, 1 - probX - probY - probZ)
     targetQubit = c_shift_index(targetQubit)
     @ccall libquest.mixPauli(qureg::Qureg, targetQubit::Cint, probX::Cdouble, probY::Cdouble, probZ::Cdouble)::Cvoid
 end
 
 function mixDensityMatrix(combineQureg, prob, otherQureg)
+    test_is_density_matrix(combineQureg)
+    test_is_density_matrix(otherQureg)
+    test_is_probability(prob)
     @ccall libquest.mixDensityMatrix(combineQureg::Qureg, prob::Cdouble, otherQureg::Qureg)::Cvoid
 end
 
-function calcPurity(qureg)
-    @ccall libquest.calcPurity(qureg::Qureg)::Cdouble
+function mixKrausMap(qureg, target, ops)
+    test_kraus_sum_is_identity(ops)
+    test_max_kraus_operators(ops,4)
+    test_is_density_matrix(qureg)
+    test_is_in_qubit_range(qureg, target)
+    ops = [make_QuEST_matrix_2x2(o) for o in ops] 
+    numOps = Cint(length(ops))
+    target = c_shift_index(target)
+    @ccall libquest.mixKrausMap(qureg::Qureg, target::Cint, ops::Ptr{ComplexMatrix2}, numOps::Cint)::Cvoid
 end
 
-function calcFidelity(qureg, pureState)
-    @ccall libquest.calcFidelity(qureg::Qureg, pureState::Qureg)::Cdouble
+function mixTwoQubitKrausMap(qureg, target1, target2, ops)
+    test_kraus_sum_is_identity(ops)
+    test_max_kraus_operators(ops,16)
+    test_is_density_matrix(qureg)
+    test_is_in_qubit_range(qureg, target1)
+    test_is_in_qubit_range(qureg, target2)
+    ops = [make_QuEST_matrix_4x4(o) for o in ops] 
+    numOps = Cint(length(ops))
+    target1 = c_shift_index(target1)
+    target2 = c_shift_index(target2)
+    @ccall libquest.mixTwoQubitKrausMap(qureg::Qureg, target1::Cint, target2::Cint, ops::Ptr{ComplexMatrix4}, numOps::Cint)::Cvoid
 end
 
-function swapGate(qureg, qubit1, qubit2)
-    qubit1 = c_shift_index(qubit1)
-    qubit2 = c_shift_index(qubit2)
-    @ccall libquest.swapGate(qureg::Qureg, qubit1::Cint, qubit2::Cint)::Cvoid
+function mixMultiQubitKrausMap(qureg, targets, ops)
+    test_kraus_sum_is_identity(ops)
+    rows,cols = length(ops) != 1 ? size(ops[1]) : size(ops)
+    !(rows == cols) && error("Kraus operators must be square") 
+    num_qubits_in_op = Int(log2(rows))
+    test_max_kraus_operators(ops,(2*num_qubits_in_op)^2)
+    test_is_density_matrix(qureg)
+    [test_is_in_qubit_range(qureg, t) for t in targets]
+    ops = [make_QuEST_matrix_NxN(o) for o in ops]
+    targets = [c_shift_index(tq) for tq in targets]
+    numTargets = Cint(length(targets))
+    numOps = Cint(length(ops))
+    @ccall libquest.mixMultiQubitKrausMap(qureg::Qureg, targets::Ptr{Cint}, numTargets::Cint, ops::Ptr{ComplexMatrixN}, numOps::Cint)::Cvoid
 end
 
-function sqrtSwapGate(qureg, qb1, qb2)
-    qb1 = c_shift_index(qb1)
-    qb2 = c_shift_index(qb2)
-    @ccall libquest.sqrtSwapGate(qureg::Qureg, qb1::Cint, qb2::Cint)::Cvoid
+function mixNonTPKrausMap(qureg, target, ops)
+    test_is_density_matrix(qureg)
+    test_max_kraus_operators(ops,4)
+    test_is_in_qubit_range(qureg, target)
+    ops = [make_QuEST_matrix_2x2(o) for o in ops] 
+    target = c_shift_index(target)
+    numOps = Cint(length(ops))
+    @ccall libquest.mixNonTPKrausMap(qureg::Qureg, target::Cint, ops::Ptr{ComplexMatrix2}, numOps::Cint)::Cvoid
 end
+
+function mixNonTPTwoQubitKrausMap(qureg, target1, target2, ops)
+    test_is_density_matrix(qureg)
+    test_max_kraus_operators(ops,16)
+    test_is_in_qubit_range(qureg, target1)
+    test_is_in_qubit_range(qureg, target2)
+    ops = [make_QuEST_matrix_4x4(o) for o in ops]
+    target1 = c_shift_index(target1)
+    target2 = c_shift_index(target2)
+    numOps = Cint(length(ops))
+    @ccall libquest.mixNonTPTwoQubitKrausMap(qureg::Qureg, target1::Cint, target2::Cint, ops::Ptr{ComplexMatrix4}, numOps::Cint)::Cvoid
+end
+
+function mixNonTPMultiQubitKrausMap(qureg, targets, ops)
+    rows,cols = length(ops) != 1 ? size(ops[1]) : size(ops)
+    !(rows == cols) && error("Kraus operators must be square") 
+    num_qubits_in_op = Int(log2(rows))
+
+    test_max_kraus_operators(ops,(2*num_qubits_in_op)^2)
+    test_is_density_matrix(qureg)
+    [test_is_in_qubit_range(qureg, t) for t in targets]
+    ops = [make_QuEST_matrix_NxN(o) for o in ops]
+    targets = [c_shift_index(tq) for tq in targets]
+    numTargets = Cint(length(targets))
+    numOps = Cint(length(ops))
+    @ccall libquest.mixNonTPMultiQubitKrausMap(qureg::Qureg, targets::Ptr{Cint}, numTargets::Cint, ops::Ptr{ComplexMatrixN}, numOps::Cint)::Cvoid
+end
+
 
 function multiStateControlledUnitary(qureg, controlQubits, controlState, numControlQubits, targetQubit, u)
     controlQubits = [c_shift_index(cq) for cq in controlQubits]
@@ -691,18 +823,7 @@ function multiControlledMultiRotatePauli(qureg, controlQubits, numControls, targ
     @ccall libquest.multiControlledMultiRotatePauli(qureg::Qureg, controlQubits::Ptr{Cint}, numControls::Cint, targetQubits::Ptr{Cint}, targetPaulis::Ptr{pauliOpType}, numTargets::Cint, angle::Cdouble)::Cvoid
 end
 
-function calcExpecPauliProd(qureg, targetQubits, pauliCodes, numTargets, workspace)
-    targetQubits = [c_shift_index(tq) for tq in targetQubits]
-    @ccall libquest.calcExpecPauliProd(qureg::Qureg, targetQubits::Ptr{Cint}, pauliCodes::Ptr{pauliOpType}, numTargets::Cint, workspace::Qureg)::Cdouble
-end
 
-function calcExpecPauliSum(qureg, allPauliCodes, termCoeffs, numSumTerms, workspace)
-    @ccall libquest.calcExpecPauliSum(qureg::Qureg, allPauliCodes::Ptr{pauliOpType}, termCoeffs::Ptr{Cdouble}, numSumTerms::Cint, workspace::Qureg)::Cdouble
-end
-
-function calcExpecPauliHamil(qureg, hamil, workspace)
-    @ccall libquest.calcExpecPauliHamil(qureg::Qureg, hamil::PauliHamil, workspace::Qureg)::Cdouble
-end
 
 function twoQubitUnitary(qureg, targetQubit1, targetQubit2, u)
     targetQubit1 = c_shift_index(targetQubit1)
@@ -754,63 +875,30 @@ function multiQubitUnitary(qureg, targs, numTargs, u)
     @ccall libquest.multiQubitUnitary(qureg::Qureg, targs::Ptr{Cint}, numTargs::Cint, u::ComplexMatrixN)::Cvoid
 end
 
-function controlledMultiQubitUnitary(qureg, ctrl, targs, numTargs, u)
-    ctrl = c_shift_index(ctrl)
-    targs = [c_shift_index(tq) for tq in targs]
-    @ccall libquest.controlledMultiQubitUnitary(qureg::Qureg, ctrl::Cint, targs::Ptr{Cint}, numTargs::Cint, u::ComplexMatrixN)::Cvoid
-end
-
-function multiControlledMultiQubitUnitary(qureg, ctrls, targs, u)
-    ctrls = Cint.([c_shift_index(cq) for cq in ctrls])
-    targs = Cint.([c_shift_index(tq) for tq in targs])
-
-    numCtrls = Cint(length(ctrls))
-    numTargs = Cint(length(targs))
-    @ccall libquest.multiControlledMultiQubitUnitary(qureg::Qureg, pointer(ctrls)::Ptr{Cint}, numCtrls::Cint, pointer(targs)::Ptr{Cint}, numTargs::Cint, make_QuEST_matrix(u)::ComplexMatrixN)::Cvoid
-end
 
 
 
 
 
-function mixKrausMap(qureg, target, ops, numOps)
-    target = c_shift_index(target)
-    @ccall libquest.mixKrausMap(qureg::Qureg, target::Cint, ops::Ptr{ComplexMatrix2}, numOps::Cint)::Cvoid
-end
 
-function mixTwoQubitKrausMap(qureg, target1, target2, ops, numOps)
-    target1 = c_shift_index(target1)
-    target2 = c_shift_index(target2)
-    @ccall libquest.mixTwoQubitKrausMap(qureg::Qureg, target1::Cint, target2::Cint, ops::Ptr{ComplexMatrix4}, numOps::Cint)::Cvoid
-end
 
-function mixMultiQubitKrausMap(qureg, targets, numTargets, ops, numOps)
-    targets = [c_shift_index(tq) for tq in targets]
-    @ccall libquest.mixMultiQubitKrausMap(qureg::Qureg, targets::Ptr{Cint}, numTargets::Cint, ops::Ptr{ComplexMatrixN}, numOps::Cint)::Cvoid
-end
 
-function mixNonTPKrausMap(qureg, target, ops, numOps)
-    target = c_shift_index(target)
-    @ccall libquest.mixNonTPKrausMap(qureg::Qureg, target::Cint, ops::Ptr{ComplexMatrix2}, numOps::Cint)::Cvoid
-end
 
-function mixNonTPTwoQubitKrausMap(qureg, target1, target2, ops, numOps)
-    target1 = c_shift_index(target1)
-    target2 = c_shift_index(target2)
-    @ccall libquest.mixNonTPTwoQubitKrausMap(qureg::Qureg, target1::Cint, target2::Cint, ops::Ptr{ComplexMatrix4}, numOps::Cint)::Cvoid
-end
-
-function mixNonTPMultiQubitKrausMap(qureg, targets, numTargets, ops, numOps)
-    targets = [c_shift_index(tq) for tq in targets]
-    @ccall libquest.mixNonTPMultiQubitKrausMap(qureg::Qureg, targets::Ptr{Cint}, numTargets::Cint, ops::Ptr{ComplexMatrixN}, numOps::Cint)::Cvoid
-end
-
-function calcHilbertSchmidtDistance(a, b)
-    @ccall libquest.calcHilbertSchmidtDistance(a::Qureg, b::Qureg)::Cdouble
-end
 
 function setWeightedQureg(fac1, qureg1, fac2, qureg2, facOut, out)
     @ccall libquest.setWeightedQureg(fac1::QComplex, qureg1::Qureg, fac2::QComplex, qureg2::Qureg, facOut::QComplex, out::Qureg)::Cvoid
+end
+
+function swapGate(qureg, qubit1, qubit2)
+    qubit1 = c_shift_index(qubit1)
+    qubit2 = c_shift_index(qubit2)
+    @ccall libquest.swapGate(qureg::Qureg, qubit1::Cint, qubit2::Cint)::Cvoid
+end
+
+function sqrtSwapGate(qureg, qb1, qb2)
+    qb1 = c_shift_index(qb1)
+    qb2 = c_shift_index(qb2)
+    @ccall libquest.sqrtSwapGate(qureg::Qureg, qb1::Cint, qb2::Cint)::Cvoid
 end
 
 function applyPauliSum(inQureg, allPauliCodes, termCoeffs, numSumTerms, outQureg)

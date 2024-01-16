@@ -188,6 +188,7 @@ export
     make_QuEST_matrix,
     make_QuEST_matrix_2x2,
     make_QuEST_matrix_4x4,
+    make_QuEST_matrix_NxN,
     pauliX_matrix,
     pauliY_matrix,
     pauliZ_matrix,

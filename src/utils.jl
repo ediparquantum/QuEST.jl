@@ -98,6 +98,27 @@ function make_QuEST_matrix_4x4(U ::Matrix{Complex{Float64}}) ::ComplexMatrix4
                         ( imag(U[4,1]), imag(U[4,2]), imag(U[4,3]), imag(U[4,4]) ) )  )
 end
 
+function make_QuEST_matrix_NxN(mat ::Matrix{Complex{Float64}}) ::ComplexMatrixN
+  (R,C) = size(mat)
+  @assert R==C
+  @assert R ≥ 2
+  num_qubits = Int(round(log2(R)))
+  @assert 2^num_qubits == R
+  @assert 1 ≤ num_qubits ≤ 50
+  mat_Q = createComplexMatrixN(num_qubits)
+  reals = []
+  imags = []
+  for c = 1:R                       # Julia is column major
+      for r = 1:R
+          push!(reals,real(mat[r,c]))
+          push!(imags,imag(mat[r,c]))
+      end
+  end
+
+  initComplexMatrixN(mat_Q, pointer(reals), pointer(imags))
+  mat_Q
+end
+
 function make_QuEST_matrix(M ::Matrix{Base.Complex{Float64}}) ::ComplexMatrixN
   (R,C) = size(M)
   @assert R==C
@@ -139,3 +160,40 @@ function apply_hadamard_to_state_vector_at_target_index(state_vec, target)
   U*state_vec
 end
 
+function get_pauli_code(str)
+  str == "I" ? pauliOpType(0) :
+  str == "X" ? pauliOpType(1) :
+  str == "Y" ? pauliOpType(2) :
+  str == "Z" ? pauliOpType(3) :
+  error("Invalid Pauli code: only I, X, Y, Z are allowed")
+end
+
+function test_is_probability(prob)
+  !(0.0 <= prob <= 1.0) && error("prob must be a probability, between 0 and 1")
+end
+
+function test_is_in_qubit_range(qureg::Qureg, targetQubit)
+  qureg.numQubitsRepresented < targetQubit && error("Qubit $targetQubit is not in the qubit range of the qureg")
+end
+
+function test_is_valid_probability(prob,threshold)
+  test_is_probability(prob)
+  prob > threshold && error("probability, ($(prob)) must be less than $(threshold)")
+end
+
+function test_is_density_matrix(qureg::Qureg)
+  qureg.isDensityMatrix == 0  && error("Qureg must be a density matrix")
+end
+
+function test_kraus_sum_is_identity(operators)
+  num_ops = length(operators)
+  dims = size(operators[1])
+  identity = Matrix(I,dims...)
+  M_ident = map(x->operators[x]'*operators[x], 1:num_ops) |> sum
+  !isapprox(M_ident,identity,atol=1e-15) && error("Kraus sum is not identity")
+end
+
+function test_max_kraus_operators(operators,max_number)
+  num_ops = length(operators)
+  num_ops > max_number && error("Number of operators, $(num_ops), must be less than $(max_number)")
+end

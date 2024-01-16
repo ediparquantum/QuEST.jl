@@ -7,12 +7,85 @@ using RandomMatrices: Haar
 using LinearAlgebra
 tolerance = 1e-10
 
-num_qubits = 3
+num_qubits = 7
 env = createQuESTEnv()
-  
 # create a 2 qubit register in the zero state
-qubits = createQureg(2, env)
-initZeroState(qubits)
+qureg = createQureg(num_qubits, env)
+workspace = createQureg(num_qubits, env)
+initZeroState(qureg)
+unsafe_load_state_vec(qureg.stateVec,2^num_qubits)
+
+targetQubits = [1,2,3]
+pauliCodes = ["I","X","Y"]
+calcExpecPauliProd(qureg, targetQubits, pauliCodes,workspace)
+allPauliCodes = ["I","I","I","I","I","I"]
+termCoeffs = [2.3,3.3]
+calcExpecPauliSum(qureg, allPauliCodes, termCoeffs, workspace)
+calcFidelity(qureg, workspace)
+ 
+error_prob =1.1
+normal_prob = 0.1
+error_polar_prob = 0.76
+error_qubit = 4
+normal_qubit = 1
+normal_qubit2 = 2
+den_mat = createDensityQureg(num_qubits, env)
+unsafe_load_state_vec(den_mat.stateVec,2^num_qubits)
+mixDamping(den_mat, normal_qubit, normal_prob)
+mixDepolarising(den_mat, normal_qubit, normal_prob)
+mixDephasing(den_mat, normal_qubit, normal_prob)
+mixTwoQubitDephasing(den_mat, normal_qubit, normal_qubit2, normal_prob)
+mixDepolarising(den_mat, normal_qubit, normal_prob)
+mixTwoQubitDepolarising(den_mat, normal_qubit, normal_qubit2, normal_prob)
+mixPauli(den_mat, normal_qubit, [normal_prob, normal_prob, normal_prob])
+
+num_qu_used = 1
+dim = 2^(num_qu_used)
+num_ops = 4
+target = 1  
+ops = [rand(Haar(2), dim) for i in 1:num_ops] / sqrt(num_ops)
+mixKrausMap(den_mat, target, ops)
+mixNonTPKrausMap(den_mat, target, ops * num_ops)
+
+num_qu_used = 2
+dim = 2^(num_qu_used)
+num_ops = 16
+target1 = 1
+target2 = 2
+ops = [rand(Haar(2), dim) for i in 1:num_ops] / sqrt(num_ops)
+mixTwoQubitKrausMap(den_mat, target1,target2, ops)
+mixNonTPTwoQubitKrausMap(den_mat, target1, target2, ops * num_ops)
+
+
+targets = [1,2,3,7]
+num_qu_used = length(targets)
+dim = 2^(num_qu_used)
+num_ops = 2*num_qu_used^2#(2*num_qu_used)^2-1 
+
+#ops = [rand(Haar(2), dim) for i in 1:num_ops] / sqrt(num_ops)
+ops = [Complex.(1.0 .* Matrix(I,dim,dim)) for i in 1:num_ops]
+
+mixMultiQubitKrausMap(den_mat, targets, ops)
+mixNonTPMultiQubitKrausMap(den_mat, targets, ops * num_ops)
+
+ops1 = [make_QuEST_matrix_NxN(o) for o in ops]
+ops2 = [make_QuEST_matrix(o) for o in ops]
+
+
+
+id_test(ops)
+
+operators = ops
+M_ident = map(x->operators[x]'*operators[x], 1:num_ops) |> sum |> x -> x/28
+mixMultiQubitKrausMap(den_mat, targets, [M_ident])
+function id_test(operators)
+    num_ops = length(operators)
+    dims = size(operators[1])
+    identity = Matrix(I,dims...)
+    M_ident = map(x->operators[x]'*operators[x], 1:num_ops) |> sum
+    !isapprox(M_ident,identity,atol=1e-15) && error("Kraus sum is not identity")
+  end
+
 
 # apply circuit
 hadamard(qubits, 1)
