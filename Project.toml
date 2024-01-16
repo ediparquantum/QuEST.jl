@@ -14,6 +14,7 @@ Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 [compat]
 Clang = "0.17"
 JuliaFormatter = "1"
+RandomMatrices = "0.5"
 Reexport = "1"
 julia = "1"
 
