@@ -14,13 +14,13 @@ Whilst we are working on getting this package registered with the official Julia
 
 ```julia
 using Pkg
-Pkg.add(url="https://github.com/fieldofnodes/QuEST.jl")
+Pkg.add("QuEST")
 ```
 
 or
 
 ```julia
-] add https://github.com/fieldofnodes/QuEST.jl
+] add QuEST
 ```
 
 ```julia
