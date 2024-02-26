@@ -1,10 +1,11 @@
 module QuEST
 
-    using Reexport
-    @reexport using QuEST_jll
-    @reexport using Clang
-    @reexport using JuliaFormatter
-    @reexport using LinearAlgebra
+    
+    using QuEST_jll
+    using Clang
+    using JuliaFormatter
+    using LinearAlgebra
+    using TensorOperations
     
 export 
     c_shift_index,
@@ -194,8 +195,17 @@ export
     pauliZ_matrix,
     hadamard_matrix,
     create_state_vec_zero_state,
-    apply_hadamard_to_state_vector_at_target_index
+    apply_hadamard_to_state_vector_at_target_index,
+    DensityMatrix,
+    StateVector,
+    state_type,
+    get_qureg_matrix,
+    per_qubit_partial_trace,
+    get_partial_trace,
+    get_per_qubit_trace
    
     include("C/quest_julia_c_wrapper.jl")
     include("utils.jl")
+    include("quantum_state.jl")
+    include("partial_trace.jl")
 end

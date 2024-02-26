@@ -1,3 +1,13 @@
+##################################################################
+# Filename  : wrapper.jl
+# Author    : Jonathan Miller
+# Date      : 2024-02-26
+# Aim       : aim_script
+#           : Script is really only used to generate functions for the C wrapper
+#           : once that has been done, this script can be deleted (or saved and not used)
+##################################################################
+
+
 using QuEST_jll 
 using Clang
 using Clang.Generators
