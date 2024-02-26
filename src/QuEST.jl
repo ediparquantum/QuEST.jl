@@ -194,7 +194,20 @@ export
     pauliZ_matrix,
     hadamard_matrix,
     create_state_vec_zero_state,
+<<<<<<< Updated upstream
     apply_hadamard_to_state_vector_at_target_index
+=======
+    apply_hadamard_to_state_vector_at_target_index,
+    DensityMatrix,
+    StateVector,
+    state_type,
+    get_qureg_matrix,
+    per_qubit_partial_trace,
+    get_partial_trace,
+    get_per_qubit_trace,
+    get_num_qubits,
+    chop
+>>>>>>> Stashed changes
    
     include("C/quest_julia_c_wrapper.jl")
     include("utils.jl")

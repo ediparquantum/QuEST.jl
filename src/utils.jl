@@ -197,3 +197,18 @@ function test_max_kraus_operators(operators,max_number)
   num_ops = length(operators)
   num_ops > max_number && error("Number of operators, $(num_ops), must be less than $(max_number)")
 end
+
+function get_num_qubits(qureg::Qureg)
+  qureg.numQubitsRepresented
+end
+
+function chop(x::Float64; threshold=1e-15)
+  abs(x) < threshold ? zero(x) : x
+end
+
+
+function chop(x::Union{ComplexF64,Complex{Float64}}; threshold=1e-15)
+  reals = chop(real(x); threshold=threshold)
+  imags = chop(imag(x); threshold=threshold)
+  Complex(reals,imags)
+end
