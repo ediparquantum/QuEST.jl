@@ -8,6 +8,11 @@ module QuEST
     using TensorOperations
     
 export 
+    ErrorMessage,
+    Julia2CSyntexError,
+    QubitsNotInQuregError,
+    throw_error,
+    test_qubit_present,
     c_shift_index,
     ComplexMatrixN,
     bindArraysToStackComplexMatrixN,
@@ -16,6 +21,7 @@ export
     ComplexArray,
     pauliOpType,
     QComplex,
+    PAULI_I, PAULI_X, PAULI_Y, PAULI_Z,
     complex,
     qComplex, 
     ComplexMatrix2,
@@ -206,7 +212,9 @@ export
     get_num_qubits,
     chop
    
+
     include("C/quest_julia_c_wrapper.jl")
+    include("error_handling.jl")
     include("utils.jl")
     include("quantum_state.jl")
     include("partial_trace.jl")
