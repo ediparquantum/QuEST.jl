@@ -1,6 +1,10 @@
 # QuEST [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://fieldofnodes.github.io/QuEST.jl/stable/) [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://fieldofnodes.github.io/QuEST.jl/dev/) [![Build Status](https://github.com/fieldofnodes/QuEST.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/fieldofnodes/QuEST.jl/actions/workflows/CI.yml?query=branch%3Amain) 
 ## Details
 
+# Branch: refen-branch-keep
+
+This branch will need to be cleaned, but I will access the branch to regen the Julia - QuEST code, if there is a substantial change to the QuEST API.
+
 1. Quantum Exact Simulation Toolkit is a high performance simulator of quantum circuits, state-vectors and density matrices.
 2. `QuEST.jl` is a wrapper for [`QuEST`](https://github.com/QuEST-Kit/QuEST), which is written in `C`. `QuEST.jl` was compiled using [`BinaryBuilder.jl`](https://github.com/JuliaPackaging/BinaryBuilder.jl/tree/master), which is a system for the compilation of binary dependencies --whose aim it to *just work* anywhere the official Julia distribution does.
 3. Function calls, enumerators, structs, etc were wrapped automatically using [`Clang.jl`](https://github.com/JuliaInterop/Clang.jl), which provided the needed `C` bindings for the Julia interface.
