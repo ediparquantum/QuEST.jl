@@ -29,11 +29,49 @@ end
 
 
 @enum pauliOpType::UInt32 begin
-    PAULI_I = 0
-    PAULI_X = 1
-    PAULI_Y = 2
-    PAULI_Z = 3
+    PAULI_I = 1
+    PAULI_X = 2
+    PAULI_Y = 3
+    PAULI_Z = 4
 end
+
+
+@enum pauliOpType::UInt32 begin
+    PAULI_I = 1
+    PAULI_X = 2
+    PAULI_Y = 3
+    PAULI_Z = 4
+end
+
+@enum cPauliOpType::UInt32 begin
+    cPAULI_I = 0
+    cPAULI_X = 1
+    cPAULI_Y = 2
+    cPAULI_Z = 3
+end
+
+function convert_to_cPauliOpType(pauliOp::pauliOpType)
+    pauli_int = Int(pauliOp)
+    if pauli_int < 1
+        error("Minimum pauliaOpType is 1")
+    elseif pauli_int > 4
+        error("Maximum pauliOpType is 4")
+    else
+        return cPauliOpType(pauli_int-1)
+    end
+end
+
+function convert_to_cPauliOpType(pauliInt::Int)
+    pauli_int = pauliInt
+    if pauli_int < 1
+        error("Minimum pauliaOpType is 1")
+    elseif pauli_int > 4
+        error("Maximum pauliOpType is 4")
+    else
+        return cPauliOpType(pauli_int-1)
+    end
+end
+
 
 
 struct QComplex
@@ -807,9 +845,12 @@ function multiRotateZ(qureg, qubits, numQubits, angle)
     @ccall libquest.multiRotateZ(qureg::Qureg, qubits::Ptr{Cint}, numQubits::Cint, angle::Cdouble)::Cvoid
 end
 
-function multiRotatePauli(qureg, targetQubits, targetPaulis, numTargets, angle)
-    targetQubits = [c_shift_index(q) for q in targetQubits]
-    @ccall libquest.multiRotatePauli(qureg::Qureg, targetQubits::Ptr{Cint}, targetPaulis::Ptr{pauliOpType}, numTargets::Cint, angle::Cdouble)::Cvoid
+function multiRotatePauli(qureg::Qureg, targetQubits::Vector{Int}, targetPaulis::Union{Vector{pauliOpType},Vector{Int}}, angle)
+    test_qubit_present(qureg, targetQubits)
+    targetQubits = [c_shift_index(q) for q in targetQubits] |> pointer
+    targetPaulis = [convert_to_cPauliOpType(tps) for tps in targetPaulis] |> pointer
+    numTargets = length(targetQubits)
+    @ccall libquest.multiRotatePauli(qureg::Qureg, targetQubits::Ptr{Cint}, targetPaulis::Ptr{cPauliOpType}, numTargets::Cint, angle::Cdouble)::Cvoid
 end
 
 function multiControlledMultiRotateZ(qureg, controlQubits, numControls, targetQubits, numTargets, angle)
