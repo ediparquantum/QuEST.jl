@@ -202,10 +202,14 @@ export
     get_partial_trace,
     get_per_qubit_trace,
     get_num_qubits,
-    chop
-   
+    chop,
+    ErrorQubitIndexOutofBoundsFromQureg,
+    throw_error,
+    check_qubits_in_range
+    
     include("C/quest_julia_c_wrapper.jl")
     include("utils.jl")
     include("quantum_state.jl")
     include("partial_trace.jl")
+    include("debugging_help.jl")
 end

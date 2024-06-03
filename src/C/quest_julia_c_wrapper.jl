@@ -226,6 +226,7 @@ function destroySubDiagonalOp(op)
 end
 
 function diagonalUnitary(qureg, targets, numTargets, op)
+    check_qubits_in_range(qureg,targets)
     @ccall libquest.diagonalUnitary(qureg::Qureg, targets::Ptr{Cint}, numTargets::Cint, op::SubDiagonalOp)::Cvoid
 end
 
