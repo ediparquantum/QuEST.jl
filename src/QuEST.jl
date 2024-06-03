@@ -2,8 +2,6 @@ module QuEST
 
     
     using QuEST_jll
-    using Clang
-    using JuliaFormatter
     using LinearAlgebra
     using TensorOperations
     
