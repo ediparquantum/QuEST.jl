@@ -1,7 +1,7 @@
 name = "QuEST"
 uuid = "2f8c4c1a-2c62-410c-b829-98d6ce53c0c2"
 authors = ["Jonathan Miller <jonathan.miller@fieldofnodes.com> and contributors"]
-version = "1.0.1"
+version = "1.0.2.1"
 
 [deps]
 Clang = "40e3b903-d033-50b4-a0cc-940c62c95e31"
