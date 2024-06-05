@@ -168,6 +168,7 @@ function get_pauli_code(str)
   error("Invalid Pauli code: only I, X, Y, Z are allowed")
 end
 
+
 function test_is_probability(prob)
   !(0.0 <= prob <= 1.0) && error("prob must be a probability, between 0 and 1")
 end

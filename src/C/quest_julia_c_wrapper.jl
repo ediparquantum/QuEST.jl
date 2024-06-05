@@ -237,6 +237,7 @@ function createDiagonalOpFromPauliHamilFile(fn, env)
 end
 
 function setDiagonalOpElems(op, startInd, real, imag, numElems)
+    test_qubit_present(qureg,startInd)
     startInd = c_shift_index(startInd)
     @ccall libquest.setDiagonalOpElems(op::DiagonalOp, startInd::Clonglong, real::Ptr{Cdouble}, imag::Ptr{Cdouble}, numElems::Clonglong)::Cvoid
 end
@@ -285,12 +286,14 @@ end
 
 function applyGateSubDiagonalOp(qureg, targets, op)
     test_qubit_present(qureg,targets)
+    targets = [c_shift_index(t) for t in targets]
     numTargets = length(targets)
     @ccall libquest.applyGateSubDiagonalOp(qureg::Qureg, targets::Ptr{Cint}, numTargets::Cint, op::SubDiagonalOp)::Cvoid
 end
 
 function applySubDiagonalOp(qureg, targets, op)
     test_qubit_present(qureg,targets)
+    targets = [c_shift_index(t) for t in targets]
     numTargets = length(targets)
     @ccall libquest.applySubDiagonalOp(qureg::Qureg, targets::Ptr{Cint}, numTargets::Cint, op::SubDiagonalOp)::Cvoid
 end
@@ -377,12 +380,12 @@ function phaseShift(qureg, targetQubit, angle)
     @ccall libquest.phaseShift(qureg::Qureg, targetQubit::Cint, angle::Cdouble)::Cvoid
 end
 
-function controlledPhaseShift(qureg, idQubit1, idQubit2, angle)
-    test_qubit_present(qureg, idQubit1)
-    test_qubit_present(qureg, idQubit2)
-    idQubit1 = c_shift_index(idQubit1)
-    idQubit2 = c_shift_index(idQubit2)
-    @ccall libquest.controlledPhaseShift(qureg::Qureg, idQubit1::Cint, idQubit2::Cint, angle::Cdouble)::Cvoid
+function controlledPhaseShift(qureg, qubit1, qubit2, angle)
+    test_qubit_present(qureg, qubit1)
+    test_qubit_present(qureg, qubit2)
+    qubit1 = c_shift_index(qubit1)
+    qubit2 = c_shift_index(qubit2)
+    @ccall libquest.controlledPhaseShift(qureg::Qureg, qubit1::Cint, qubit2::Cint, angle::Cdouble)::Cvoid
 end
 
 function multiControlledPhaseShift(qureg, controlQubits, angle)
@@ -394,12 +397,12 @@ end
 
 
 
-function controlledPhaseFlip(qureg, idQubit1, idQubit2)
-    test_qubit_present(qureg, idQubit1)
-    test_qubit_present(qureg, idQubit2)
-    idQubit1 = c_shift_index(idQubit1)
-    idQubit2 = c_shift_index(idQubit2)
-    @ccall libquest.controlledPhaseFlip(qureg::Qureg, idQubit1::Cint, idQubit2::Cint)::Cvoid
+function controlledPhaseFlip(qureg, qubit1, qubit2)
+    test_qubit_present(qureg, qubit1)
+    test_qubit_present(qureg, qubit2)
+    qubit1 = c_shift_index(qubit1)
+    qubit2 = c_shift_index(qubit2)
+    @ccall libquest.controlledPhaseFlip(qureg::Qureg, qubit1::Cint, qubit2::Cint)::Cvoid
 end
 
 function multiControlledPhaseFlip(qureg, controlQubits) 
@@ -456,6 +459,7 @@ function copyStateFromGPU(qureg)
 end
 
 function copySubstateToGPU(qureg, startInd, numAmps)
+    test_qubit_present(qureg, startInd)
     startInd = c_shift_index(startInd)
     @ccall libquest.copySubstateToGPU(qureg::Qureg, startInd::Clonglong, numAmps::Clonglong)::Cvoid
 end
@@ -759,53 +763,53 @@ function writeRecordedQASMToFile(qureg, filename)
 end
 
 function mixDephasing(qureg, targetQubit, prob)
+    test_qubit_present(qureg,targetQubit)
     test_is_density_matrix(qureg)
     test_is_valid_probability(prob,0.5)
-    test_is_in_qubit_range(qureg, targetQubit)
     targetQubit = c_shift_index(targetQubit)
     @ccall libquest.mixDephasing(qureg::Qureg, targetQubit::Cint, prob::Cdouble)::Cvoid
 end
 
 function mixTwoQubitDephasing(qureg, qubit1, qubit2, prob)
+    test_qubit_present(qureg,qubit1)
+    test_qubit_present(qureg,qubit2)
     test_is_density_matrix(qureg)
     test_is_valid_probability(prob,0.75)
-    test_is_in_qubit_range(qureg, qubit1)
-    test_is_in_qubit_range(qureg, qubit2)
     qubit1 = c_shift_index(qubit1)
     qubit2 = c_shift_index(qubit2)
     @ccall libquest.mixTwoQubitDephasing(qureg::Qureg, qubit1::Cint, qubit2::Cint, prob::Cdouble)::Cvoid
 end
 
 function mixDepolarising(qureg, targetQubit, prob)
+    test_qubit_present(qureg,targetQubit)
     test_is_density_matrix(qureg)
     test_is_valid_probability(prob,0.75)
-    test_is_in_qubit_range(qureg, targetQubit) 
     targetQubit = c_shift_index(targetQubit)
     @ccall libquest.mixDepolarising(qureg::Qureg, targetQubit::Cint, prob::Cdouble)::Cvoid
 end
 
 function mixDamping(qureg, targetQubit, prob)
+    test_qubit_present(qureg,targetQubit)
     test_is_density_matrix(qureg)
     test_is_probability(prob)
-    test_is_in_qubit_range(qureg, targetQubit) 
     targetQubit = c_shift_index(targetQubit)
     @ccall libquest.mixDamping(qureg::Qureg, targetQubit::Cint, prob::Cdouble)::Cvoid
 end
 
 function mixTwoQubitDepolarising(qureg, qubit1, qubit2, prob)
+    test_qubit_present(qureg,qubit1)
+    test_qubit_present(qureg,qubit2)
     test_is_density_matrix(qureg)
     test_is_valid_probability(prob, 15/16)
-    test_is_in_qubit_range(qureg, qubit1) 
-    test_is_in_qubit_range(qureg, qubit2) 
     qubit1 = c_shift_index(qubit1)
     qubit2 = c_shift_index(qubit2)
     @ccall libquest.mixTwoQubitDepolarising(qureg::Qureg, qubit1::Cint, qubit2::Cint, prob::Cdouble)::Cvoid
 end
 
 function mixPauli(qureg, targetQubit, prob)
+    test_qubit_present(qureg,targetQubit)
     probX, probY, probZ = prob
     test_is_density_matrix(qureg)
-    test_is_in_qubit_range(qureg, targetQubit)
     test_is_valid_probability(probX, 1 - probX - probY - probZ)
     test_is_valid_probability(probY, 1 - probX - probY - probZ)
     test_is_valid_probability(probZ, 1 - probX - probY - probZ)
@@ -821,10 +825,10 @@ function mixDensityMatrix(combineQureg, prob, otherQureg)
 end
 
 function mixKrausMap(qureg, target, ops)
+    test_qubit_present(qureg,target)
     test_kraus_sum_is_identity(ops)
     test_max_kraus_operators(ops,4)
     test_is_density_matrix(qureg)
-    test_is_in_qubit_range(qureg, target)
     ops = [make_QuEST_matrix_2x2(o) for o in ops] 
     numOps = Cint(length(ops))
     target = c_shift_index(target)
@@ -832,11 +836,11 @@ function mixKrausMap(qureg, target, ops)
 end
 
 function mixTwoQubitKrausMap(qureg, target1, target2, ops)
+    test_qubit_present(qureg, target1)
+    test_qubit_present(qureg, target2)
     test_kraus_sum_is_identity(ops)
     test_max_kraus_operators(ops,16)
     test_is_density_matrix(qureg)
-    test_is_in_qubit_range(qureg, target1)
-    test_is_in_qubit_range(qureg, target2)
     ops = [make_QuEST_matrix_4x4(o) for o in ops] 
     numOps = Cint(length(ops))
     target1 = c_shift_index(target1)
@@ -845,13 +849,13 @@ function mixTwoQubitKrausMap(qureg, target1, target2, ops)
 end
 
 function mixMultiQubitKrausMap(qureg, targets, ops)
+    test_qubit_present(qureg, targets)
     test_kraus_sum_is_identity(ops)
     rows,cols = length(ops) != 1 ? size(ops[1]) : size(ops)
-    !(rows == cols) && error("Kraus operators must be square") 
+    test_kraus_operator_dimension_square(rows,cols)
     num_qubits_in_op = Int(log2(rows))
     test_max_kraus_operators(ops,(2*num_qubits_in_op)^2)
     test_is_density_matrix(qureg)
-    [test_is_in_qubit_range(qureg, t) for t in targets]
     ops = [make_QuEST_matrix_NxN(o) for o in ops]
     targets = [c_shift_index(tq) for tq in targets]
     numTargets = Cint(length(targets))
@@ -860,6 +864,7 @@ function mixMultiQubitKrausMap(qureg, targets, ops)
 end
 
 function mixNonTPKrausMap(qureg, target, ops)
+    test_qubit_present(qureg, target)
     test_is_density_matrix(qureg)
     test_max_kraus_operators(ops,4)
     test_is_in_qubit_range(qureg, target)
@@ -870,10 +875,10 @@ function mixNonTPKrausMap(qureg, target, ops)
 end
 
 function mixNonTPTwoQubitKrausMap(qureg, target1, target2, ops)
+    test_qubit_present(qureg, target1)
+    test_qubit_present(qureg, target2)
     test_is_density_matrix(qureg)
     test_max_kraus_operators(ops,16)
-    test_is_in_qubit_range(qureg, target1)
-    test_is_in_qubit_range(qureg, target2)
     ops = [make_QuEST_matrix_4x4(o) for o in ops]
     target1 = c_shift_index(target1)
     target2 = c_shift_index(target2)
@@ -882,13 +887,12 @@ function mixNonTPTwoQubitKrausMap(qureg, target1, target2, ops)
 end
 
 function mixNonTPMultiQubitKrausMap(qureg, targets, ops)
+    test_qubit_present(qureg, targets)
     rows,cols = length(ops) != 1 ? size(ops[1]) : size(ops)
-    !(rows == cols) && error("Kraus operators must be square") 
+    test_kraus_operator_dimension_square(rows,cols)
     num_qubits_in_op = Int(log2(rows))
-
     test_max_kraus_operators(ops,(2*num_qubits_in_op)^2)
     test_is_density_matrix(qureg)
-    [test_is_in_qubit_range(qureg, t) for t in targets]
     ops = [make_QuEST_matrix_NxN(o) for o in ops]
     targets = [c_shift_index(tq) for tq in targets]
     numTargets = Cint(length(targets))
@@ -897,14 +901,21 @@ function mixNonTPMultiQubitKrausMap(qureg, targets, ops)
 end
 
 
-function multiStateControlledUnitary(qureg, controlQubits, controlState, numControlQubits, targetQubit, u)
+function multiStateControlledUnitary(qureg, controlQubits, controlState,targetQubit, u)
+    test_qubit_present(qureg, controlQubits)
+    test_qubit_present(qureg, targetQubit)
+    test_qubit_present(qureg, controlState)
     controlQubits = [c_shift_index(cq) for cq in controlQubits]
     targetQubit = c_shift_index(targetQubit)
+    targetQubit = c_shift_index(controlState)
+    numControlQubits = length(numControlQubits)
     @ccall libquest.multiStateControlledUnitary(qureg::Qureg, controlQubits::Ptr{Cint}, controlState::Ptr{Cint}, numControlQubits::Cint, targetQubit::Cint, u::ComplexMatrix2)::Cvoid
 end
 
-function multiRotateZ(qureg, qubits, numQubits, angle)
+function multiRotateZ(qureg, qubits, angle)
+    test_qubit_present(qureg, qubits)
     qubits = [c_shift_index(q) for q in qubits]
+    numQubits = length(qubits)
     @ccall libquest.multiRotateZ(qureg::Qureg, qubits::Ptr{Cint}, numQubits::Cint, angle::Cdouble)::Cvoid
 end
 
@@ -916,21 +927,32 @@ function multiRotatePauli(qureg::Qureg, targetQubits::Vector{Int}, targetPaulis:
     @ccall libquest.multiRotatePauli(qureg::Qureg, targetQubits::Ptr{Cint}, targetPaulis::Ptr{cPauliOpType}, numTargets::Cint, angle::Cdouble)::Cvoid
 end
 
-function multiControlledMultiRotateZ(qureg, controlQubits, numControls, targetQubits, numTargets, angle)
+function multiControlledMultiRotateZ(qureg, controlQubits,targetQubits,angle)
+    test_qubit_present(qureg, controlQubits)
+    test_qubit_present(qureg, targetQubits)
     controlQubits = [c_shift_index(cq) for cq in controlQubits]
     targetQubits = [c_shift_index(tq) for tq in targetQubits]
+    numControls = length(numControls)
+    numTargets = length(numTargets)
     @ccall libquest.multiControlledMultiRotateZ(qureg::Qureg, controlQubits::Ptr{Cint}, numControls::Cint, targetQubits::Ptr{Cint}, numTargets::Cint, angle::Cdouble)::Cvoid
 end
 
-function multiControlledMultiRotatePauli(qureg, controlQubits, numControls, targetQubits, targetPaulis, numTargets, angle)
+function multiControlledMultiRotatePauli(qureg, controlQubits, targetQubits, targetPaulis::Union{Vector{pauliOpType},Vector{Int}},angle)
+    test_qubit_present(qureg, controlQubits)
+    test_qubit_present(qureg, targetQubits)
     controlQubits = [c_shift_index(cq) for cq in controlQubits]
     targetQubits = [c_shift_index(tq) for tq in targetQubits]
+    targetPaulis = [convert_to_cPauliOpType(tps) for tps in targetPaulis] |> pointer
+    numControls = length(numControls)
+    numTargets = length(numTargets)
     @ccall libquest.multiControlledMultiRotatePauli(qureg::Qureg, controlQubits::Ptr{Cint}, numControls::Cint, targetQubits::Ptr{Cint}, targetPaulis::Ptr{pauliOpType}, numTargets::Cint, angle::Cdouble)::Cvoid
 end
 
 
 
 function twoQubitUnitary(qureg, targetQubit1, targetQubit2, u)
+    test_qubit_present(qureg, targetQubit1)
+    test_qubit_present(qureg, targetQubit2)
     targetQubit1 = c_shift_index(targetQubit1)
     targetQubit2 = c_shift_index(targetQubit2)
     @ccall libquest.twoQubitUnitary(qureg::Qureg, targetQubit1::Cint, targetQubit2::Cint, u::ComplexMatrix4)::Cvoid
@@ -939,54 +961,39 @@ end
 
 
 function controlledTwoQubitUnitary(qureg, controlQubit, targetQubit1, targetQubit2, u)
+    test_qubit_present_multi_control(qureg, controlQubit)
+    test_qubit_present(qureg, targetQubit1)
+    test_qubit_present(qureg, targetQubit2)
+    test_qubits_different(targetQubit1, targetQubit2)
+    test_qubits_different(controlQubit, targetQubit1)
+    test_qubits_different(controlQubit, targetQubit2)
     controlQubit = c_shift_index(controlQubit)
     targetQubit1 = c_shift_index(targetQubit1)
     targetQubit2 = c_shift_index(targetQubit2)
-
-    !(0 ≤ controlQubit < qureg.numQubitsRepresented) && error("controlQubit must be in [0, qureg.numQubitsRepresented)")
-    !(0 ≤ targetQubit1 < qureg.numQubitsRepresented) && error("targetQubit1 must be in [0, qureg.numQubitsRepresented)")
-    !(0 ≤ targetQubit2 < qureg.numQubitsRepresented) && error("targetQubit2 must be in [0, qureg.numQubitsRepresented)")
-    !(targetQubit1 != targetQubit2) && error("targetQubit1 must be different from targetQubit2")
-    !(controlQubit ∉ [targetQubit1,targetQubit2]) && error("controlQubit must be different from targetQubit1 and targetQubit2")
     u = make_QuEST_matrix_4x4(u)
-
     @ccall libquest.controlledTwoQubitUnitary(qureg::Qureg, controlQubit::Cint, targetQubit1::Cint, targetQubit2::Cint, u::ComplexMatrix4)::Cvoid
 end
 
 function multiControlledTwoQubitUnitary(qureg, controlQubits, targetQubit1, targetQubit2, u)
+    test_qubit_present_multi_control(qureg, controlQubits)
+    test_qubit_present(qureg, targetQubit1)
+    test_qubit_present(qureg, targetQubit2)
+    test_qubits_different(targetQubit1, targetQubit2)
+    test_qubits_different(controlQubit, targetQubit1)
+    test_qubits_different(controlQubit, targetQubit2)
     controlQubits = Cint.([c_shift_index(cq) for cq in controlQubits])
     targetQubit1 = c_shift_index(targetQubit1)
     targetQubit2 = c_shift_index(targetQubit2)
-
-    !(0 ≤ length(controlQubits) ≤ qureg.numQubitsRepresented -2) && error("number of controlQubits must be in [0, qureg.numQubitsRepresented -2]")
-    !(0 ≤ targetQubit1 < qureg.numQubitsRepresented) && error("targetQubit1 must be in [0, qureg.numQubitsRepresented)")
-    !(0 ≤ targetQubit2 < qureg.numQubitsRepresented) && error("targetQubit2 must be in [0, qureg.numQubitsRepresented)")
-    targetQubit1 == targetQubit2 && error("targetQubit1 must be different from targetQubit2")
-    !(targetQubit1 ∉ controlQubits) && error("targetQubit1 must be different from controlQubits")
-    !(targetQubit2 ∉ controlQubits) && error("targetQubit2 must be different from controlQubits")
-
     @ccall libquest.multiControlledTwoQubitUnitary(qureg::Qureg, pointer(controlQubits)::Ptr{Cint}, length(controlQubits)::Cint, targetQubit1::Cint, targetQubit2::Cint, make_QuEST_matrix_4x4(u)::ComplexMatrix4)::Cvoid
 end
 
 
-
-
-
-
-
-
-function multiQubitUnitary(qureg, targets, numTargets, u)
+function multiQubitUnitary(qureg, targets, u)
+    test_qubit_present(qureg, targets)
     targets = [c_shift_index(tq) for tq in targets]
+    numTargets = lenght(numTargets)
     @ccall libquest.multiQubitUnitary(qureg::Qureg, targets::Ptr{Cint}, numTargets::Cint, u::ComplexMatrixN)::Cvoid
 end
-
-
-
-
-
-
-
-
 
 
 
@@ -995,15 +1002,19 @@ function setWeightedQureg(fac1, qureg1, fac2, qureg2, facOut, out)
 end
 
 function swapGate(qureg, qubit1, qubit2)
+    test_qubit_present(qureg, qubit1)
+    test_qubit_present(qureg, qubit2)
     qubit1 = c_shift_index(qubit1)
     qubit2 = c_shift_index(qubit2)
     @ccall libquest.swapGate(qureg::Qureg, qubit1::Cint, qubit2::Cint)::Cvoid
 end
 
-function sqrtSwapGate(qureg, qb1, qb2)
-    qb1 = c_shift_index(qb1)
-    qb2 = c_shift_index(qb2)
-    @ccall libquest.sqrtSwapGate(qureg::Qureg, qb1::Cint, qb2::Cint)::Cvoid
+function sqrtSwapGate(qureg, qubit1, qubit2)
+    test_qubit_present(qureg, qubit1)
+    test_qubit_present(qureg, qubit2)
+    qubit1 = c_shift_index(qubit1)
+    qubit2 = c_shift_index(qubit2)
+    @ccall libquest.sqrtSwapGate(qureg::Qureg, qubit1::Cint, qubit2::Cint)::Cvoid
 end
 
 function applyPauliSum(inQureg, allPauliCodes, termCoeffs, numSumTerms, outQureg)
@@ -1019,35 +1030,57 @@ function applyTrotterCircuit(qureg, hamil, time, order, reps)
 end
 
 function applyMatrix2(qureg, targetQubit, u)
+    test_qubit_present(qureg, targetQubit)
     targetQubit = c_shift_index(targetQubit)
     @ccall libquest.applyMatrix2(qureg::Qureg, targetQubit::Cint, u::ComplexMatrix2)::Cvoid
 end
 
 function applyMatrix4(qureg, targetQubit1, targetQubit2, u)
+    test_qubit_present(qureg, targetQubit1)
+    test_qubit_present(qureg, targetQubit2)
     targetQubit1 = c_shift_index(targetQubit1)
     targetQubit2 = c_shift_index(targetQubit2)
     @ccall libquest.applyMatrix4(qureg::Qureg, targetQubit1::Cint, targetQubit2::Cint, u::ComplexMatrix4)::Cvoid
 end
 
-function applyMatrixN(qureg, targets, numTargets, u)
+function applyMatrixN(qureg, targets, u)
+    test_qubit_present(qureg, targets)
     targets = [c_shift_index(tq) for tq in targets]
+    numTargets = length(numTargets)
     @ccall libquest.applyMatrixN(qureg::Qureg, targets::Ptr{Cint}, numTargets::Cint, u::ComplexMatrixN)::Cvoid
 end
 
-function applyGateMatrixN(qureg, targets, numTargets, u)
+function applyGateMatrixN(qureg, targets, u)
+    test_qubit_present(qureg, targets)
     targets = [c_shift_index(tq) for tq in targets]
+    numTargets = length(numTargets)
     @ccall libquest.applyGateMatrixN(qureg::Qureg, targets::Ptr{Cint}, numTargets::Cint, u::ComplexMatrixN)::Cvoid
 end
 
-function applyMultiControlledGateMatrixN(qureg, ctrls, numCtrls, targets, numTargets, m)
+function applyMultiControlledGateMatrixN(qureg, ctrls, targets, m)
+    test_qubit_present(qureg, ctrls)
+    test_qubit_present(qureg, targets)
+    test_if_vector_has_repetitions(ctrls)
+    test_if_vector_has_repetitions(targets)
+    test_if_vec1_is_in_vec2_vise_versa(ctrls,targets)
+    test_if_vec_has_length_at_least_one(ctrls)
+    test_if_vec_has_length_at_least_one(targets)
     ctrls = [c_shift_index(cq) for cq in ctrls]
     targets = [c_shift_index(tq) for tq in targets]
+    numCtrls = length(numCtrls)
+    numTargets = length(numTargets)
     @ccall libquest.applyMultiControlledGateMatrixN(qureg::Qureg, ctrls::Ptr{Cint}, numCtrls::Cint, targets::Ptr{Cint}, numTargets::Cint, m::ComplexMatrixN)::Cvoid
 end
 
-function applyMultiControlledMatrixN(qureg, ctrls, numCtrls, targets, numTargets, u)
+
+
+function applyMultiControlledMatrixN(qureg, ctrls, targets, u)
+    test_qubit_present(qureg, ctrls)
+    test_qubit_present(qureg, targets)
     ctrls = [c_shift_index(cq) for cq in ctrls]
     targets = [c_shift_index(tq) for tq in targets]
+    numCtrls = length(numCtrls)
+    numTargets = length(numTargets)
     @ccall libquest.applyMultiControlledMatrixN(qureg::Qureg, ctrls::Ptr{Cint}, numCtrls::Cint, targets::Ptr{Cint}, numTargets::Cint, u::ComplexMatrixN)::Cvoid
 end
 
@@ -1055,14 +1088,19 @@ function invalidQuESTInputError(errMsg, errFunc)
     @ccall libquest.invalidQuESTInputError(errMsg::Cstring, errFunc::Cstring)::Cvoid
 end
 
-function applyPhaseFunc(qureg, qubits, numQubits, encoding, coeffs, exponents, numTerms)
+function applyPhaseFunc(qureg, qubits, encoding, coeffs, exponents, numTerms)
+    test_qubit_present(qureg, qubits)
     qubits = [c_shift_index(q) for q in qubits]
+    numQubits = length(numQubits)
     @ccall libquest.applyPhaseFunc(qureg::Qureg, qubits::Ptr{Cint}, numQubits::Cint, encoding::bitEncoding, coeffs::Ptr{Cdouble}, exponents::Ptr{Cdouble}, numTerms::Cint)::Cvoid
 end
 
-function applyPhaseFuncOverrides(qureg, qubits, numQubits, encoding, coeffs, exponents, numTerms, overrideInds, overridePhases, numOverrides)
+function applyPhaseFuncOverrides(qureg, qubits, encoding, coeffs, exponents, numTerms, overrideInds, overridePhases, numOverrides)
+    test_qubit_present(qureg, qubits)
+    test_qubit_present(qureg, overrideInds)
     qubits = [c_shift_index(q) for q in qubits]
     overrideInds = [c_shift_index(oi) for oi in overrideInds]
+    numQubits = length(numQubits)
     @ccall libquest.applyPhaseFuncOverrides(qureg::Qureg, qubits::Ptr{Cint}, numQubits::Cint, encoding::bitEncoding, coeffs::Ptr{Cdouble}, exponents::Ptr{Cdouble}, numTerms::Cint, overrideInds::Ptr{Clonglong}, overridePhases::Ptr{Cdouble}, numOverrides::Cint)::Cvoid
 end
 
@@ -1071,29 +1109,37 @@ function applyMultiVarPhaseFunc(qureg, qubits, numQubitsPerReg, numRegs, encodin
     @ccall libquest.applyMultiVarPhaseFunc(qureg::Qureg, qubits::Ptr{Cint}, numQubitsPerReg::Ptr{Cint}, numRegs::Cint, encoding::bitEncoding, coeffs::Ptr{Cdouble}, exponents::Ptr{Cdouble}, numTermsPerReg::Ptr{Cint})::Cvoid
 end
 
-function applyMultiVarPhaseFuncOverrides(qureg, qubits, numQubitsPerReg, numRegs, encoding, coeffs, exponents, numTermsPerReg, overrideInds, overridePhases, numOverrides)  
+function applyMultiVarPhaseFuncOverrides(qureg, qubits, numQubitsPerReg, numRegs, encoding, coeffs, exponents, numTermsPerReg, overrideInds, overridePhases, numOverrides) 
+    test_qubit_present(qureg, qubits) 
+    test_qubit_present(qureg, overrideInds)
     qubits = [c_shift_index(q) for q in qubits]
     overrideInds = [c_shift_index(oi) for oi in overrideInds]
     @ccall libquest.applyMultiVarPhaseFuncOverrides(qureg::Qureg, qubits::Ptr{Cint}, numQubitsPerReg::Ptr{Cint}, numRegs::Cint, encoding::bitEncoding, coeffs::Ptr{Cdouble}, exponents::Ptr{Cdouble}, numTermsPerReg::Ptr{Cint}, overrideInds::Ptr{Clonglong}, overridePhases::Ptr{Cdouble}, numOverrides::Cint)::Cvoid
 end
 
 function applyNamedPhaseFunc(qureg, qubits, numQubitsPerReg, numRegs, encoding, functionNameCode)
+    test_qubit_present(qureg, qubits)
     qubits = [c_shift_index(q) for q in qubits]
     @ccall libquest.applyNamedPhaseFunc(qureg::Qureg, qubits::Ptr{Cint}, numQubitsPerReg::Ptr{Cint}, numRegs::Cint, encoding::bitEncoding, functionNameCode::phaseFunc)::Cvoid
 end
 
 function applyNamedPhaseFuncOverrides(qureg, qubits, numQubitsPerReg, numRegs, encoding, functionNameCode, overrideInds, overridePhases, numOverrides)
+    test_qubit_present(qureg, qubits)
+    test_qubit_present(qureg, overrideInds)
     qubits = [c_shift_index(q) for q in qubits]
     overrideInds = [c_shift_index(oi) for oi in overrideInds]
     @ccall libquest.applyNamedPhaseFuncOverrides(qureg::Qureg, qubits::Ptr{Cint}, numQubitsPerReg::Ptr{Cint}, numRegs::Cint, encoding::bitEncoding, functionNameCode::phaseFunc, overrideInds::Ptr{Clonglong}, overridePhases::Ptr{Cdouble}, numOverrides::Cint)::Cvoid
 end
 
 function applyParamNamedPhaseFunc(qureg, qubits, numQubitsPerReg, numRegs, encoding, functionNameCode, params, numParams)
+    test_qubit_present(qureg, qubits)
     qubits = [c_shift_index(q) for q in qubits]
     @ccall libquest.applyParamNamedPhaseFunc(qureg::Qureg, qubits::Ptr{Cint}, numQubitsPerReg::Ptr{Cint}, numRegs::Cint, encoding::bitEncoding, functionNameCode::phaseFunc, params::Ptr{Cdouble}, numParams::Cint)::Cvoid
 end
 
 function applyParamNamedPhaseFuncOverrides(qureg, qubits, numQubitsPerReg, numRegs, encoding, functionNameCode, params, numParams, overrideInds, overridePhases, numOverrides)
+    test_qubit_present(qureg, qubits)
+    test_qubit_present(qureg, overrideInds)
     qubits = [c_shift_index(q) for q in qubits]
     overrideInds = [c_shift_index(oi) for oi in overrideInds]
     @ccall libquest.applyParamNamedPhaseFuncOverrides(qureg::Qureg, qubits::Ptr{Cint}, numQubitsPerReg::Ptr{Cint}, numRegs::Cint, encoding::bitEncoding, functionNameCode::phaseFunc, params::Ptr{Cdouble}, numParams::Cint, overrideInds::Ptr{Clonglong}, overridePhases::Ptr{Cdouble}, numOverrides::Cint)::Cvoid
@@ -1103,12 +1149,15 @@ function applyFullQFT(qureg)
     @ccall libquest.applyFullQFT(qureg::Qureg)::Cvoid
 end
 
-function applyQFT(qureg, qubits, numQubits)
+function applyQFT(qureg, qubits)
+    test_qubit_present(qureg, qubits)
     qubits = [c_shift_index(q) for q in qubits]
+    numQubits = length(numQubits)
     @ccall libquest.applyQFT(qureg::Qureg, qubits::Ptr{Cint}, numQubits::Cint)::Cvoid
 end
 
 function applyProjector(qureg, qubit, outcome)
+    test_qubit_present(qureg, qubit)
     qubit = c_shift_index(qubit)
     @ccall libquest.applyProjector(qureg::Qureg, qubit::Cint, outcome::Cint)::Cvoid
 end

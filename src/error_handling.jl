@@ -1,10 +1,11 @@
-abstract type ErrorMessage end
-abstract type Julia2CSyntexError <: ErrorMessage end
+abstract type AbstractErrorMessage end
+abstract type AbstractJulia2CSyntexError <: AbstractErrorMessage end
+abstract type AbstractDecoherenceError <: AbstractErrorMessage end
 
 
 
 
-struct QubitsNotInQuregError <: Julia2CSyntexError end
+struct QubitsNotInQuregError <: AbstractJulia2CSyntexError end
 function throw_error(::QubitsNotInQuregError)
     error("Qubits not in qureg, Segmentation fault will occur. Throwing error to prevent this.")
 end
@@ -16,9 +17,18 @@ function test_qubit_present(qureg::Qureg,qubits::Union{Int,Array{Int}})
 end
 
 
+struct QubitsNotInQuregMultiControllError <: AbstractJulia2CSyntexError end
+function throw_error(::QubitsNotInQuregMultiControllError)
+    error("Qubits not in qureg - 2, Segmentation fault will occur. Throwing error to prevent this.")
+end
+function test_qubit_present_multi_control(qureg,controlQubits)
+    if !(0 ≤ length(controlQubits) ≤ qureg.numQubitsRepresented -2)
+        throw_error(QubitsNotInQuregMultiControllError())
+    end
+end
 
 
-struct RowColNotInQuregError <: Julia2CSyntexError end
+struct RowColNotInQuregError <: AbstractJulia2CSyntexError end
 function throw_error(::RowColNotInQuregError)
     error("Qubits not in qureg, Segmentation fault will occur. Throwing error to prevent this.")
 end
@@ -33,7 +43,7 @@ end
 
 
 
-struct TwoQubitsMustBeDifferent <: Julia2CSyntexError end
+struct TwoQubitsMustBeDifferent <: AbstractJulia2CSyntexError end
 function throw_error(::TwoQubitsMustBeDifferent)
     error("Situation: qubits must be different, but they are the same")
 end
@@ -46,9 +56,7 @@ end
 
 
 
-
-
-struct PauliCodeLengthErrorPauliProd <: Julia2CSyntexError end
+struct PauliCodeLengthErrorPauliProd <: AbstractJulia2CSyntexError end
 function throw_error(::PauliCodeLengthErrorPauliProd)
     error("targetQubits and pauliCodes must have the same length")
 end
@@ -59,7 +67,9 @@ function test_length_pauli_prod(targetQubits,pauliCodes)
 end
 
 
-struct PauliCodeLengthErrorPauliSum <: Julia2CSyntexError end
+
+
+struct PauliCodeLengthErrorPauliSum <: AbstractJulia2CSyntexError end
 function throw_error(::PauliCodeLengthErrorPauliSum)
     error("There must be the same number of Pauli codes (I,X,Y or Z) as length total sum terms multiplied by the number of qubits represented by qureg (e.g. 2 qubits and 2 terms = 4 codes)")
 end
@@ -71,3 +81,13 @@ end
 
 
 
+
+struct KrausNotSquareError <: AbstractDecoherenceError end
+function throw_error(::KrausNotSquareError)
+    error("Kraus operators must be square") 
+end
+function test_kraus_operator_dimension_square(rows,cols)
+    if !(rows == cols)
+        throw_error(KrausNotSquareError())
+    end
+end
