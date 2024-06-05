@@ -128,3 +128,40 @@ function test_if_vec_has_length_at_least_one(vec)
         throw_error(LengthVectorNotSufficientMustBeAtLeastOne())
     end
 end
+
+
+
+struct CalcFidelityRequiresOneQuregStateVector <: AbstractJulia2CSyntexError end
+function throw_error(::CalcFidelityRequiresOneQuregStateVector)
+    error("At least one qureg must be a state vector") 
+end
+function test_if_at_least_one_qureg_is_state_vector(pure_state_qureg)
+    if pure_state_qureg.isDensityMatrix == 1
+        throw_error(CalcFidelityRequiresOneQuregStateVector())
+    end
+end
+
+
+
+struct QuregIsNotDensityMatric <: AbstractJulia2CSyntexError end
+function throw_error(::QuregIsNotDensityMatric)
+    error("Qureg is not a density matrix and needs to be.") 
+end
+function test_if_qureg_is_density_matrix(qureg::Qureg)
+    if qureg.isDensityMatrix == 0
+        throw_error(QuregIsNotDensityMatric())
+    end
+end
+
+
+
+
+struct QuresHaveDifferentDimensions <: AbstractJulia2CSyntexError end
+function throw_error(::QuresHaveDifferentDimensions)
+    error("Quregs do not have the same number of qubits") 
+end
+function test_if_qureg_is_density_matrix(qureg1::Qureg,qureg2::Qureg)
+    if qureg1.numQubitsRepresented != qureg2.numQubitsRepresented
+        throw_error(QuresHaveDifferentDimensions())
+    end
+end

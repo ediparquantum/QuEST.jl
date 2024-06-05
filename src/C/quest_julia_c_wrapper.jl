@@ -694,6 +694,9 @@ function calcInnerProduct(bra, ket)
 end
 
 function calcDensityInnerProduct(rho1, rho2)
+    test_if_qureg_is_density_matrix(rho1)
+    test_if_qureg_is_density_matrix(rho2)
+    test_if_qureg_is_density_matrix(rho1,rho2)
     @ccall libquest.calcDensityInnerProduct(rho1::Qureg, rho2::Qureg)::Cdouble
 end
 
@@ -702,6 +705,7 @@ function calcPurity(qureg)
 end
 
 function calcFidelity(qureg, pureState)
+    test_if_at_least_one_qureg_is_state_vector(pureState)
     @ccall libquest.calcFidelity(qureg::Qureg, pureState::Qureg)::Cdouble
 end
 
