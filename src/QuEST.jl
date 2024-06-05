@@ -208,7 +208,7 @@ export
     get_partial_trace,
     get_per_qubit_trace,
     get_num_qubits,
-    chop,
+    chop
 
 
     
