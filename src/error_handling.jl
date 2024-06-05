@@ -91,3 +91,40 @@ function test_kraus_operator_dimension_square(rows,cols)
         throw_error(KrausNotSquareError())
     end
 end
+
+
+
+struct VectorHasRepetitions <: AbstractJulia2CSyntexError end
+function throw_error(::VectorHasRepetitions)
+    error("Vector has repeitions") 
+end
+function test_if_vector_has_repetitions(v)
+    if length(v) != length(Set(v))
+        throw_error(VectorHasRepetitions())
+    end
+end
+
+
+struct VectorsNotMutuallyExclusive <: AbstractJulia2CSyntexError end
+function throw_error(::VectorsNotMutuallyExclusive)
+    error("Vectors are not mutually exclusive") 
+end
+function test_if_vec1_is_in_vec2_vise_versa(vec1,vec2)
+    v1v2 = [i .∈ vec1 for i in vec2][1] |> any
+    v2v1 = [i .∈ vec2 for i in vec1][1] |> any
+    if v1v2 || v2v1
+        throw_error(VectorsNotMutuallyExclusive())
+    end
+end
+
+
+struct LengthVectorNotSufficientMustBeAtLeastOne  <: AbstractJulia2CSyntexError end
+function throw_error(::LengthVectorNotSufficientMustBeAtLeastOne)
+    error("Length must be at least one") 
+end
+function test_if_vec_has_length_at_least_one(vec)
+  
+    if length(vec) < 1
+        throw_error(LengthVectorNotSufficientMustBeAtLeastOne())
+    end
+end
