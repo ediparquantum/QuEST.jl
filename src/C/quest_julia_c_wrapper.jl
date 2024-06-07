@@ -9,10 +9,39 @@ function bindArraysToStackComplexMatrixN(numQubits, re, im, reStorage, imStorage
 end
 
 @enum phaseGateType::UInt32 begin
+    SIGMA_Z = 1
+    S_GATE = 2
+    T_GATE = 3
+end
+
+@enum cphaseGateType::UInt32 begin
     SIGMA_Z = 0
     S_GATE = 1
     T_GATE = 2
 end
+
+
+function convert_to_cphaseGateType(phaseGateTypeOp::phaseGateType)
+    phaseGateTypeInt = Int(phaseGateTypeOp)
+    if phaseGateTypeInt < 1
+        error("Minimum pauliaOpType is 1")
+    elseif phaseGateTypeInt > 3
+        error("Maximum pauliOpType is 3")
+    else
+        return cphaseGateType(phaseGateTypeInt-1)
+    end
+end
+
+function convert_to_cphaseGateType(phaseGateTypeInt::Int)
+    if phaseGateTypeInt < 1
+        error("Minimum pauliaOpType is 1")
+    elseif phaseGateTypeInt > 3
+        error("Maximum pauliOpType is 3")
+    else
+        return cphaseGateType(phaseGateTypeInt-1)
+    end
+end
+
 
 struct QASMLogger
     buffer::Cstring
