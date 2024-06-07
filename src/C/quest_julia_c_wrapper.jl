@@ -4,44 +4,6 @@ struct ComplexMatrixN
     imag::Ptr{Ptr{Cdouble}}
 end
 
-function bindArraysToStackComplexMatrixN(numQubits, re, im, reStorage, imStorage)
-    @ccall libquest.bindArraysToStackComplexMatrixN(numQubits::Cint, re::Ptr{Ptr{Cdouble}}, im::Ptr{Ptr{Cdouble}}, reStorage::Ptr{Ptr{Cdouble}}, imStorage::Ptr{Ptr{Cdouble}})::ComplexMatrixN
-end
-
-@enum phaseGateType::UInt32 begin
-    SIGMA_Z = 1
-    S_GATE = 2
-    T_GATE = 3
-end
-
-@enum cphaseGateType::UInt32 begin
-    SIGMA_Z = 0
-    S_GATE = 1
-    T_GATE = 2
-end
-
-
-function convert_to_cphaseGateType(phaseGateTypeOp::phaseGateType)
-    phaseGateTypeInt = Int(phaseGateTypeOp)
-    if phaseGateTypeInt < 1
-        error("Minimum pauliaOpType is 1")
-    elseif phaseGateTypeInt > 3
-        error("Maximum pauliOpType is 3")
-    else
-        return cphaseGateType(phaseGateTypeInt-1)
-    end
-end
-
-function convert_to_cphaseGateType(phaseGateTypeInt::Int)
-    if phaseGateTypeInt < 1
-        error("Minimum pauliaOpType is 1")
-    elseif phaseGateTypeInt > 3
-        error("Maximum pauliOpType is 3")
-    else
-        return cphaseGateType(phaseGateTypeInt-1)
-    end
-end
-
 
 struct QASMLogger
     buffer::Cstring
@@ -54,46 +16,6 @@ struct ComplexArray
     real::Ptr{Cdouble}
     imag::Ptr{Cdouble}
 end
-
-
-
-
-@enum pauliOpType::UInt32 begin
-    PAULI_I = 1
-    PAULI_X = 2
-    PAULI_Y = 3
-    PAULI_Z = 4
-end
-
-@enum cPauliOpType::UInt32 begin
-    cPAULI_I = 0
-    cPAULI_X = 1
-    cPAULI_Y = 2
-    cPAULI_Z = 3
-end
-
-function convert_to_cPauliOpType(pauliOp::pauliOpType)
-    pauli_int = Int(pauliOp)
-    if pauli_int < 1
-        error("Minimum pauliaOpType is 1")
-    elseif pauli_int > 4
-        error("Maximum pauliOpType is 4")
-    else
-        return cPauliOpType(pauli_int-1)
-    end
-end
-
-function convert_to_cPauliOpType(pauliInt::Int)
-    pauli_int = pauliInt
-    if pauli_int < 1
-        error("Minimum pauliaOpType is 1")
-    elseif pauli_int > 4
-        error("Maximum pauliOpType is 4")
-    else
-        return cPauliOpType(pauli_int-1)
-    end
-end
-
 
 
 struct QComplex
@@ -118,35 +40,6 @@ struct QVector
     z::Cdouble
 end
 
-@enum phaseFunc::UInt32 begin
-    NORM = 0
-    SCALED_NORM = 1
-    INVERSE_NORM = 2
-    SCALED_INVERSE_NORM = 3
-    SCALED_INVERSE_SHIFTED_NORM = 4
-    PRODUCT = 5
-    SCALED_PRODUCT = 6
-    INVERSE_PRODUCT = 7
-    SCALED_INVERSE_PRODUCT = 8
-    DISTANCE = 9
-    SCALED_DISTANCE = 10
-    INVERSE_DISTANCE = 11
-    SCALED_INVERSE_DISTANCE = 12
-    SCALED_INVERSE_SHIFTED_DISTANCE = 13
-    SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE = 14
-end
-
-@enum bitEncoding::UInt32 begin
-    UNSIGNED = 0
-    TWOS_COMPLEMENT = 1
-end
-
-struct PauliHamil
-    pauliCodes::Ptr{pauliOpType}
-    termCoeffs::Ptr{Cdouble}
-    numSumTerms::Cint
-    numQubits::Cint
-end
 
 struct DiagonalOp
     numQubits::Cint
@@ -164,6 +57,7 @@ struct SubDiagonalOp
     real::Ptr{Cdouble}
     imag::Ptr{Cdouble}
 end
+
 
 struct Qureg
     isDensityMatrix::Cint
@@ -190,6 +84,217 @@ struct QuESTEnv
     seeds::Ptr{Culong}
     numSeeds::Cint
     cuConfig::Ptr{Ptr{Cvoid}}
+end
+
+
+
+
+
+
+
+function bindArraysToStackComplexMatrixN(numQubits, re, im, reStorage, imStorage)
+    @ccall libquest.bindArraysToStackComplexMatrixN(numQubits::Cint, re::Ptr{Ptr{Cdouble}}, im::Ptr{Ptr{Cdouble}}, reStorage::Ptr{Ptr{Cdouble}}, imStorage::Ptr{Ptr{Cdouble}})::ComplexMatrixN
+end
+
+
+
+@enum phaseGateType::UInt32 begin
+    jSIGMA_Z = 1
+    jS_GATE = 2
+    jT_GATE = 3
+end
+
+@enum phaseGateType::UInt32 begin
+    SIGMA_Z = 0
+    S_GATE = 1
+    T_GATE = 2
+end
+
+function convert_to_cphaseGateType(phaseGateTypeOp::phaseGateType)
+    phaseGateTypeInt = Int(phaseGateTypeOp)
+    if phaseGateTypeInt < 1
+        error("Minimum phaseGateType is 1")
+    elseif phaseGateTypeInt > 3
+        error("Maximum phaseGateType is 3")
+    else
+        return phaseGateType(phaseGateTypeInt-1)
+    end
+end
+
+function convert_to_cphaseGateType(phaseGateTypeInt::Int)
+    if phaseGateTypeInt < 1
+        error("Minimum phaseGateType is 1")
+    elseif phaseGateTypeInt > 3
+        error("Maximum phaseGateType is 3")
+    else
+        return phaseGateType(phaseGateTypeInt-1)
+    end
+end
+
+
+
+
+@enum jpauliOpType::UInt32 begin
+    jPAULI_I = 1
+    jPAULI_X = 2
+    jPAULI_Y = 3
+    jPAULI_Z = 4
+end
+
+@enum pauliOpType::UInt32 begin
+    PAULI_I = 0
+    PAULI_X = 1
+    PAULI_Y = 2
+    PAULI_Z = 3
+end
+
+function convert_to_cPauliOpType(pauliOp::jpauliOpType)
+    pauli_int = Int(pauliOp)
+    if pauli_int < 1
+        error("Minimum pauliaOpType is 1")
+    elseif pauli_int > 4
+        error("Maximum jpauliOpType is 4")
+    else
+        return pauliOpType(pauli_int-1)
+    end
+end
+
+function convert_to_cPauliOpType(pauliInt::Int)
+    pauli_int = pauliInt
+    if pauli_int < 1
+        error("Minimum pauliaOpType is 1")
+    elseif pauli_int > 4
+        error("Maximum jpauliOpType is 4")
+    else
+        return pauliOpType(pauli_int-1)
+    end
+end
+
+function convert_to_cPauliOpType(str::String)
+    str == "I" ? pauliOpType(0) :
+    str == "X" ? pauliOpType(1) :
+    str == "Y" ? pauliOpType(2) :
+    str == "Z" ? pauliOpType(3) :
+    error("Invalid Pauli code: only I, X, Y, Z are allowed")
+  end
+
+
+struct PauliHamil
+    pauliCodes::Ptr{jpauliOpType}
+    termCoeffs::Ptr{Cdouble}
+    numSumTerms::Cint
+    numQubits::Cint
+
+    function PauliHamil(pauliCodes,termCoeffs,numSumTerms,numQubits)
+        pauliCodes = convert_to_cPauliOpType(pauliCodes)
+        new(pauliCodes,termCoeffs,numSumTerms,numQubits)
+    end
+end
+
+
+
+
+
+
+
+
+
+@enum jphaseFunc::UInt32 begin
+    jNORM = 1
+    jSCALED_NORM = 2
+    jINVERSE_NORM = 3
+    jSCALED_INVERSE_NORM = 4
+    jSCALED_INVERSE_SHIFTED_NORM = 5
+    jPRODUCT = 6
+    jSCALED_PRODUCT = 7
+    jINVERSE_PRODUCT = 8
+    jSCALED_INVERSE_PRODUCT = 9
+    jDISTANCE = 10
+    jSCALED_DISTANCE = 11
+    jINVERSE_DISTANCE = 12
+    jSCALED_INVERSE_DISTANCE = 13
+    jSCALED_INVERSE_SHIFTED_DISTANCE = 14
+    jSCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE = 15
+end
+
+@enum phaseFunc::UInt32 begin
+    NORM = 0
+    SCALED_NORM = 1
+    INVERSE_NORM = 2
+    SCALED_INVERSE_NORM = 3
+    SCALED_INVERSE_SHIFTED_NORM = 4
+    PRODUCT = 5
+    SCALED_PRODUCT = 6
+    INVERSE_PRODUCT = 7
+    SCALED_INVERSE_PRODUCT = 8
+    DISTANCE = 9
+    SCALED_DISTANCE = 10
+    INVERSE_DISTANCE = 11
+    SCALED_INVERSE_DISTANCE = 12
+    SCALED_INVERSE_SHIFTED_DISTANCE = 13
+    SCALED_INVERSE_SHIFTED_WEIGHTED_DISTANCE = 14
+end
+
+function convert_to_cphaseFunc(phaseFn::jphaseFunc)
+    phaseFn_int = Int(phaseFn)
+    if phaseFn_int < 1
+        error("Minimum jphaseFunc is 1")
+    elseif phaseFn_int > 15
+        error("Maximum jphaseFunc is 15")
+    else
+        return phaseFunc(phaseFn_int-1)
+    end
+end
+
+function convert_to_cphaseFunc(phaseFnInt::Int)
+    if phaseFnInt < 1
+        error("Minimum jphaseFunc is 1")
+    elseif phaseFnInt > 15
+        error("Maximum jphaseFunc is 15")
+    else
+        return phaseFunc(phaseFnInt-1)
+    end
+end
+
+
+
+
+
+
+
+@enum jbitEncoding::UInt32 begin
+    jUNSIGNED = 1
+    jTWOS_COMPLEMENT = 2
+end
+
+
+
+@enum bitEncoding::UInt32 begin
+    UNSIGNED = 0
+    TWOS_COMPLEMENT = 1
+end
+
+
+
+function convert_to_cbitEncoding(bitEncode::jbitEncoding)
+    bitEncode_int = Int(bitEncode)
+    if bitEncode_int < 1
+        error("Minimum jbitEncoding is 1")
+    elseif bitEncode_int > 2
+        error("Maximum jbitEncoding is 2")
+    else
+        return bitEncoding(bitEncode_int-1)
+    end
+end
+
+function convert_to_cbitEncoding(jbitEncoding::Int)
+    if phaseFnInt < 1
+        error("Minimum jbitEncoding is 1")
+    elseif phaseFnInt > 2
+        error("Maximum jbitEncoding is 2")
+    else
+        return bitEncoding(phaseFnInt-1)
+    end
 end
 
 
@@ -238,6 +343,7 @@ function createPauliHamilFromFile(fn)
 end
 
 function initPauliHamil(hamil, coeffs, codes)
+    codes = [convert_to_cPauliOpType(i) for i in codes] |> pointer
     @ccall libquest.initPauliHamil(hamil::PauliHamil, coeffs::Ptr{Cdouble}, codes::Ptr{pauliOpType})::Cvoid
 end
 
@@ -500,25 +606,25 @@ function copySubstateFromGPU(qureg, startInd, numAmps)
 end
 
 function getAmp(qureg, index)
-    test_qubit_present(qureg, index)
+    test_amp_index_in_qureg(qureg, index)
     index = c_shift_index(index)
     @ccall libquest.getAmp(qureg::Qureg, index::Clonglong)::QComplex
 end
 
 function getRealAmp(qureg, index)
-    test_qubit_present(qureg, index)
+    test_amp_index_in_qureg(qureg, index)
     index = c_shift_index(index)
     @ccall libquest.getRealAmp(qureg::Qureg, index::Clonglong)::Cdouble
 end
 
 function getImagAmp(qureg, index)
-    test_qubit_present(qureg, index)
+    test_amp_index_in_qureg(qureg, index)
     index = c_shift_index(index)
     @ccall libquest.getImagAmp(qureg::Qureg, index::Clonglong)::Cdouble
 end
 
 function getProbAmp(qureg, index)
-    test_qubit_present(qureg, index)
+    test_amp_index_in_qureg(qureg, index)
     index = c_shift_index(index)
     @ccall libquest.getProbAmp(qureg::Qureg, index::Clonglong)::Cdouble
 end
@@ -742,7 +848,7 @@ function calcExpecPauliProd(qureg, targetQubits, pauliCodes, workspace)
     test_qubit_present(qureg,targetQubits)
     test_length_pauli_prod(targetQubits,pauliCodes)
     targetQubits = pointer(Cint.([c_shift_index(tq) for tq in targetQubits]))
-    pauliCodes = [get_pauli_code(str) for str in pauliCodes] |> pointer
+    pauliCodes = [convert_to_cPauliOpType(i) for i in pauliCodes] |> pointer
     numTargets = length(targetQubits)
     @ccall libquest.calcExpecPauliProd(qureg::Qureg, targetQubits::Ptr{Cint}, pauliCodes::Ptr{pauliOpType}, numTargets::Cint, workspace::Qureg)::Cdouble
 end
@@ -750,7 +856,7 @@ end
 function calcExpecPauliSum(qureg, allPauliCodes, termCoeffs, workspace)
     test_length_pauli_sum(qureg,numSumTerms,allPauliCodes)
     numSumTerms = length(termCoeffs)
-    allPauliCodes = [get_pauli_code(str) for str in allPauliCodes] |> pointer
+    allPauliCodes = [convert_to_cPauliOpType(i) for i in allPauliCodes] |> pointer
     termCoeffs = pointer(termCoeffs)
     @ccall libquest.calcExpecPauliSum(qureg::Qureg, allPauliCodes::Ptr{pauliOpType}, termCoeffs::Ptr{Cdouble}, numSumTerms::Cint, workspace::Qureg)::Cdouble
 end
@@ -952,12 +1058,12 @@ function multiRotateZ(qureg, qubits, angle)
     @ccall libquest.multiRotateZ(qureg::Qureg, qubits::Ptr{Cint}, numQubits::Cint, angle::Cdouble)::Cvoid
 end
 
-function multiRotatePauli(qureg::Qureg, targetQubits::Vector{Int}, targetPaulis::Union{Vector{pauliOpType},Vector{Int}}, angle)
+function multiRotatePauli(qureg::Qureg, targetQubits::Vector{Int}, targetPaulis::Union{Vector{jpauliOpType},Vector{Int}}, angle)
     test_qubit_present(qureg, targetQubits)
     targetQubits = [c_shift_index(q) for q in targetQubits] |> pointer
     targetPaulis = [convert_to_cPauliOpType(tps) for tps in targetPaulis] |> pointer
     numTargets = length(targetQubits)
-    @ccall libquest.multiRotatePauli(qureg::Qureg, targetQubits::Ptr{Cint}, targetPaulis::Ptr{cPauliOpType}, numTargets::Cint, angle::Cdouble)::Cvoid
+    @ccall libquest.multiRotatePauli(qureg::Qureg, targetQubits::Ptr{Cint}, targetPaulis::Ptr{pauliOpType}, numTargets::Cint, angle::Cdouble)::Cvoid
 end
 
 function multiControlledMultiRotateZ(qureg, controlQubits,targetQubits,angle)
@@ -970,7 +1076,7 @@ function multiControlledMultiRotateZ(qureg, controlQubits,targetQubits,angle)
     @ccall libquest.multiControlledMultiRotateZ(qureg::Qureg, controlQubits::Ptr{Cint}, numControls::Cint, targetQubits::Ptr{Cint}, numTargets::Cint, angle::Cdouble)::Cvoid
 end
 
-function multiControlledMultiRotatePauli(qureg, controlQubits, targetQubits, targetPaulis::Union{Vector{pauliOpType},Vector{Int}},angle)
+function multiControlledMultiRotatePauli(qureg, controlQubits, targetQubits, targetPaulis::Union{Vector{jpauliOpType},Vector{Int}},angle)
     test_qubit_present(qureg, controlQubits)
     test_qubit_present(qureg, targetQubits)
     controlQubits = [c_shift_index(cq) for cq in controlQubits]
@@ -1051,6 +1157,7 @@ function sqrtSwapGate(qureg, qubit1, qubit2)
 end
 
 function applyPauliSum(inQureg, allPauliCodes, termCoeffs, numSumTerms, outQureg)
+    allPauliCodes = [convert_to_cPauliOpType(tps) for tps in allPauliCodes] |> pointer
     @ccall libquest.applyPauliSum(inQureg::Qureg, allPauliCodes::Ptr{pauliOpType}, termCoeffs::Ptr{Cdouble}, numSumTerms::Cint, outQureg::Qureg)::Cvoid
 end
 
@@ -1125,6 +1232,7 @@ function applyPhaseFunc(qureg, qubits, encoding, coeffs, exponents, numTerms)
     test_qubit_present(qureg, qubits)
     qubits = [c_shift_index(q) for q in qubits]
     numQubits = length(numQubits)
+    encoding = convert_to_cbitEncoding(encoding)
     @ccall libquest.applyPhaseFunc(qureg::Qureg, qubits::Ptr{Cint}, numQubits::Cint, encoding::bitEncoding, coeffs::Ptr{Cdouble}, exponents::Ptr{Cdouble}, numTerms::Cint)::Cvoid
 end
 
@@ -1134,11 +1242,13 @@ function applyPhaseFuncOverrides(qureg, qubits, encoding, coeffs, exponents, num
     qubits = [c_shift_index(q) for q in qubits]
     overrideInds = [c_shift_index(oi) for oi in overrideInds]
     numQubits = length(numQubits)
+    encoding = convert_to_cbitEncoding(encoding)
     @ccall libquest.applyPhaseFuncOverrides(qureg::Qureg, qubits::Ptr{Cint}, numQubits::Cint, encoding::bitEncoding, coeffs::Ptr{Cdouble}, exponents::Ptr{Cdouble}, numTerms::Cint, overrideInds::Ptr{Clonglong}, overridePhases::Ptr{Cdouble}, numOverrides::Cint)::Cvoid
 end
 
 function applyMultiVarPhaseFunc(qureg, qubits, numQubitsPerReg, numRegs, encoding, coeffs, exponents, numTermsPerReg) 
     qubits = [c_shift_index(q) for q in qubits]
+    encoding = convert_to_cbitEncoding(encoding)
     @ccall libquest.applyMultiVarPhaseFunc(qureg::Qureg, qubits::Ptr{Cint}, numQubitsPerReg::Ptr{Cint}, numRegs::Cint, encoding::bitEncoding, coeffs::Ptr{Cdouble}, exponents::Ptr{Cdouble}, numTermsPerReg::Ptr{Cint})::Cvoid
 end
 
@@ -1147,12 +1257,15 @@ function applyMultiVarPhaseFuncOverrides(qureg, qubits, numQubitsPerReg, numRegs
     test_qubit_present(qureg, overrideInds)
     qubits = [c_shift_index(q) for q in qubits]
     overrideInds = [c_shift_index(oi) for oi in overrideInds]
+    encoding = convert_to_cbitEncoding(encoding)
     @ccall libquest.applyMultiVarPhaseFuncOverrides(qureg::Qureg, qubits::Ptr{Cint}, numQubitsPerReg::Ptr{Cint}, numRegs::Cint, encoding::bitEncoding, coeffs::Ptr{Cdouble}, exponents::Ptr{Cdouble}, numTermsPerReg::Ptr{Cint}, overrideInds::Ptr{Clonglong}, overridePhases::Ptr{Cdouble}, numOverrides::Cint)::Cvoid
 end
 
 function applyNamedPhaseFunc(qureg, qubits, numQubitsPerReg, numRegs, encoding, functionNameCode)
     test_qubit_present(qureg, qubits)
     qubits = [c_shift_index(q) for q in qubits]
+    encoding = convert_to_cbitEncoding(encoding)
+    functionNameCode = convert_to_cphaseFunc(functionNameCode)
     @ccall libquest.applyNamedPhaseFunc(qureg::Qureg, qubits::Ptr{Cint}, numQubitsPerReg::Ptr{Cint}, numRegs::Cint, encoding::bitEncoding, functionNameCode::phaseFunc)::Cvoid
 end
 
@@ -1161,12 +1274,16 @@ function applyNamedPhaseFuncOverrides(qureg, qubits, numQubitsPerReg, numRegs, e
     test_qubit_present(qureg, overrideInds)
     qubits = [c_shift_index(q) for q in qubits]
     overrideInds = [c_shift_index(oi) for oi in overrideInds]
+    encoding = convert_to_cbitEncoding(encoding)
+    functionNameCode = convert_to_cphaseFunc(functionNameCode)
     @ccall libquest.applyNamedPhaseFuncOverrides(qureg::Qureg, qubits::Ptr{Cint}, numQubitsPerReg::Ptr{Cint}, numRegs::Cint, encoding::bitEncoding, functionNameCode::phaseFunc, overrideInds::Ptr{Clonglong}, overridePhases::Ptr{Cdouble}, numOverrides::Cint)::Cvoid
 end
 
 function applyParamNamedPhaseFunc(qureg, qubits, numQubitsPerReg, numRegs, encoding, functionNameCode, params, numParams)
     test_qubit_present(qureg, qubits)
     qubits = [c_shift_index(q) for q in qubits]
+    encoding = convert_to_cbitEncoding(encoding)
+    functionNameCode = convert_to_cphaseFunc(functionNameCode)
     @ccall libquest.applyParamNamedPhaseFunc(qureg::Qureg, qubits::Ptr{Cint}, numQubitsPerReg::Ptr{Cint}, numRegs::Cint, encoding::bitEncoding, functionNameCode::phaseFunc, params::Ptr{Cdouble}, numParams::Cint)::Cvoid
 end
 
@@ -1175,6 +1292,8 @@ function applyParamNamedPhaseFuncOverrides(qureg, qubits, numQubitsPerReg, numRe
     test_qubit_present(qureg, overrideInds)
     qubits = [c_shift_index(q) for q in qubits]
     overrideInds = [c_shift_index(oi) for oi in overrideInds]
+    encoding = convert_to_cbitEncoding(encoding)
+    functionNameCode = convert_to_cphaseFunc(functionNameCode)
     @ccall libquest.applyParamNamedPhaseFuncOverrides(qureg::Qureg, qubits::Ptr{Cint}, numQubitsPerReg::Ptr{Cint}, numRegs::Cint, encoding::bitEncoding, functionNameCode::phaseFunc, params::Ptr{Cdouble}, numParams::Cint, overrideInds::Ptr{Clonglong}, overridePhases::Ptr{Cdouble}, numOverrides::Cint)::Cvoid
 end
 

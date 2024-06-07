@@ -30,7 +30,7 @@ end
 
 struct RowColNotInQuregError <: AbstractJulia2CSyntexError end
 function throw_error(::RowColNotInQuregError)
-    error("Qubits not in qureg, Segmentation fault will occur. Throwing error to prevent this.")
+    error("Row,col index not in qureg, Segmentation fault will occur. Throwing error to prevent this.")
 end
 function test_row_col_in_size(qureg::Qureg,row_col::Int)
     num_qubits = qureg.numQubitsRepresented
@@ -40,6 +40,16 @@ function test_row_col_in_size(qureg::Qureg,row_col::Int)
     end
 end
 
+struct AmpIndexNotInQureg <:AbstractJulia2CSyntexError end
+function throw_error(::RowColNotInQuregError)
+    error("Amp index is not in qureg, Segmentation fault will occur. Throwing error to prevent this.")
+end
+
+function test_amp_index_in_qureg(qureg,amp_index)
+    if amp_index ≤ 0 && amp_index > qureg.numAmpsTotal
+        throw_error(AmpIndexNotInQureg())
+    end
+end
 
 
 
