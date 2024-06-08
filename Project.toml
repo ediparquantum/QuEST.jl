@@ -10,6 +10,7 @@ RandomMatrices = "2576dda1-a324-5b11-aa66-c48ed7e3c618"
 TensorOperations = "6aa20fa7-93e2-5fca-9bc0-fbd0db3c71a2"
 
 [compat]
+RandomMatrices = "0.5"
 TensorOperations = "4.1"
 julia = "1"
 
