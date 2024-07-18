@@ -175,3 +175,17 @@ function test_if_qureg_is_density_matrix(qureg1::Qureg,qureg2::Qureg)
         throw_error(QuresHaveDifferentDimensions())
     end
 end
+
+
+
+
+
+struct GenericErrorMessageToInsert <: AbstractJulia2CSyntexError end
+function throw_error(::GenericErrorMessageToInsert)
+    error("Put error message here") 
+end
+function test_generic_error_message(input::Bool)
+    if input
+        throw_error(GenericErrorMessageToInsert())
+    end
+end
