@@ -98,7 +98,7 @@ end
 
 
 
-@enum phaseGateType::UInt32 begin
+@enum jphaseGateType::UInt32 begin
     jSIGMA_Z = 1
     jS_GATE = 2
     jT_GATE = 3

@@ -41,7 +41,7 @@ function test_row_col_in_size(qureg::Qureg,row_col::Int)
 end
 
 struct AmpIndexNotInQureg <:AbstractJulia2CSyntexError end
-function throw_error(::RowColNotInQuregError)
+function throw_error(::AmpIndexNotInQureg)
     error("Amp index is not in qureg, Segmentation fault will occur. Throwing error to prevent this.")
 end
 

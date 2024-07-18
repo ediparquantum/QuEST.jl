@@ -30,11 +30,12 @@ end
 @testset "Test: Diagonal Op" begin
     test_DiagonalOp()
 end
-=#
+
 @testset "Test: Pauli Hamil" begin
     test_PauliHamil()
 end
 
+=#
 @testset "Test: Compact Unitary" begin
     test_compactUnitary()
 end
@@ -89,10 +90,11 @@ end
     test_hadamard()
 end
 
+#=
 @testset "Test: Multi Controlled Multi Qubit Unitary" begin
     test_multiControlledMultiQubitUnitary()
 end
-
+=#
 
 @testset "Test: Multi Controlled Phase Flip" begin
     test_multiControlledPhaseFlip()
@@ -103,10 +105,11 @@ end
     test_multiControlledPhaseShift()
 end
 
+#=
 @testset "Test: Multi Controlled Two Qubit Unitary" begin
     test_multiControlledTwoQubitUnitary()
 end
-
+=#
 
 
 

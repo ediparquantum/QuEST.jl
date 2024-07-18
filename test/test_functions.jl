@@ -218,6 +218,7 @@ function test_compactUnitary()
     destroyQuESTEnv(env)
 end
 
+
 function test_controlledCompactUnitary()
     env = createQuESTEnv()
     for t=1:10
