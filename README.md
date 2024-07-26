@@ -54,7 +54,32 @@ For more in depth tutorials see (`C` based)
 8. [QuEST whitepaper](https://www.nature.com/articles/s41598-019-47174-9)
 
 
+## Maintenance
 
+To maintain QuEST.jl with future releases of QuEST:
+
+1. go to [BinaryBuilder.jl doc's page](https://docs.binarybuilder.org/stable/)
+2. Follow instructions to pre-compile the latest version of QuEST according hardware requirements
+3. The `build_tarballs.jl` file showcasing how to precompile QuEST is found on the [Yggdrasil package page here](https://github.com/JuliaPackaging/Yggdrasil/blob/master/Q/QuEST/build_tarballs.jl)
+4. Best to follow instructions from (1) and use the wizard
+5. Once this is done the updated pacakge `QuEST_jll.jl` will automatically update with the latest precompiled version. Found on the [Julia binary wrapper organisation (JuliaBinaryWrapper)](https://github.com/JuliaBinaryWrappers), check the repositories for your package ([`QuEST_jll.jl`](https://github.com/JuliaBinaryWrappers/QuEST_jll.jl)).
+7. Now if there are any updated funcation names or new interfaces, this package [`QuEST.jl`](https://github.com/fieldofnodes/QuEST.jl) will need to be updated. See example:
+
+### Wrapping QuEST from C in Julia
+
+Call `C` with a `ccall` type function. Consider the Hadamard function as example 
+
+```julia
+function hadamard(qureg, targetQubit)
+    test_qubit_present(qureg,targetQubit)
+    targetQubit = c_shift_index(targetQubit)
+    @ccall libquest.hadamard(qureg::Qureg, targetQubit::Cint)::Cvoid
+end
+```
+
+The line starting with `@ccall...` is calling the function by accessing the precompiled binary. To presenve segmentation faults and hence prevent Julia crashing at function call I assert the `targetQubit`, which is an integer and is in the set of qubits contained in the `qureg`, if not, then an error is thrown. Calls to `C` need to ensure indices are shifted to the `0`-index, which is done with `c_shift_index`.
+
+Then follow standard Julia package management and release for new version. 
 
 
 ## Acknowledgements
