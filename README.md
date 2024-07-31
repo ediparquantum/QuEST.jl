@@ -13,13 +13,13 @@ Whilst we are working on getting this package registered with the official Julia
 
 ```julia
 using Pkg
-Pkg.add("QuEST")
+Pkg.add(url = "https://github.com/ediparquantum/QuEST.jl")
 ```
 
 or
 
 ```julia
-] add QuEST
+] add https://github.com/ediparquantum/QuEST.jl
 ```
 
 ```julia
